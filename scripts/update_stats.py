@@ -25,6 +25,7 @@ class Application:
     result: str
     success: str
     total: float
+    has_pending_price: bool
     readme_path: Path
     doc_path: Path | None
 
@@ -58,10 +59,10 @@ def normalize_status(app: Application) -> str:
     return app.status or "未分类"
 
 
-def parse_price_table(text: str) -> float:
+def parse_price_table(text: str) -> tuple[float, bool]:
     section = re.search(r"## 价格情况\s*(.*?)(?:\n## |\Z)", text, re.S)
     if not section:
-        return 0.0
+        return 0.0, False
 
     rows = []
     for line in section.group(1).splitlines():
@@ -73,33 +74,38 @@ def parse_price_table(text: str) -> float:
             rows.append(cells)
 
     if len(rows) < 2:
-        return 0.0
+        return 0.0, False
 
     headers = rows[0]
     total = 0.0
+    has_pending = False
     for cells in rows[1:]:
         first = cells[0] if cells else ""
-        if "合计" in first or "总计" in first:
-            continue
-
         subtotal = None
         quantity = None
         unit_price = None
         for index, header in enumerate(headers):
             value = cells[index] if index < len(cells) else ""
             if "小计" in header or "金额" in header:
+                if re.search(r"待复核|待确认|待补充", value):
+                    has_pending = True
                 subtotal = parse_money(value)
             elif "数量" in header:
                 quantity = parse_money(value)
             elif "单价" in header:
+                if re.search(r"待复核|待确认|待补充", value):
+                    has_pending = True
                 unit_price = parse_money(value)
+
+        if "合计" in first or "总计" in first:
+            continue
 
         if subtotal is not None and subtotal > 0:
             total += subtotal
         elif quantity is not None and unit_price is not None:
             total += quantity * unit_price
 
-    return total
+    return total, has_pending
 
 
 def load_applications() -> list[Application]:
@@ -112,6 +118,7 @@ def load_applications() -> list[Application]:
         year = parts[0] if len(parts) >= 3 else "未归档"
         quarter = parts[1] if len(parts) >= 3 else "未归档"
         text = readme.read_text(encoding="utf-8")
+        total, has_pending_price = parse_price_table(text)
         title_match = re.search(r"^#\s+(.+?)\s*$", text, re.MULTILINE)
         title = title_match.group(1).strip() if title_match else readme.parent.name
         doc_candidates = sorted(readme.parent.glob("*.docx"))
@@ -123,7 +130,8 @@ def load_applications() -> list[Application]:
             status=extract_field(text, "申报状态"),
             result=extract_field(text, "申报结果"),
             success=extract_field(text, "成功情况"),
-            total=parse_price_table(text),
+            total=total,
+            has_pending_price=has_pending_price,
             readme_path=readme,
             doc_path=doc_candidates[0] if doc_candidates else None,
         )
@@ -133,6 +141,11 @@ def load_applications() -> list[Application]:
 
 def yuan(value: float) -> str:
     return f"¥{value:,.2f}"
+
+
+def yuan_with_pending(app: Application) -> str:
+    suffix = " + 待复核" if app.has_pending_price else ""
+    return f"{yuan(app.total)}{suffix}"
 
 
 def rel(path: Path) -> str:
@@ -154,7 +167,8 @@ def build_stats(apps: list[Application]) -> str:
 
     lines = [
         f"- 申报总数: {len(apps)}",
-        f"- 价格总额: {yuan(total_amount)}",
+        f"- 已确认价格总额: {yuan(total_amount)}",
+        f"- 含待复核价格申报数: {sum(1 for app in apps if app.has_pending_price)}",
         f"- 已填价格申报数: {len(known_prices)}",
         f"- 平均价格: {yuan(average)}",
         f"- 成功率: {success_rate:.1f}%",
@@ -174,7 +188,8 @@ def build_stats(apps: list[Application]) -> str:
         ]
     )
     for period, count in sorted(period_counts.items()):
-        lines.append(f"| {period} | {count} | {yuan(period_amounts[period])} |")
+        pending = any(f"{app.year}/{app.quarter}" == period and app.has_pending_price for app in apps)
+        lines.append(f"| {period} | {count} | {yuan(period_amounts[period])}{' + 待复核' if pending else ''} |")
 
     lines.extend(
         [
@@ -188,7 +203,7 @@ def build_stats(apps: list[Application]) -> str:
         readme_link = f"[{app.title}]({rel(app.readme_path)})"
         doc_link = f"[docx]({rel(app.doc_path)})" if app.doc_path else "缺失"
         lines.append(
-            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {yuan(app.total)} | {doc_link} |"
+            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {yuan_with_pending(app)} | {doc_link} |"
         )
 
     lines.extend(
@@ -199,7 +214,7 @@ def build_stats(apps: list[Application]) -> str:
         ]
     )
     for index, app in enumerate(sorted(apps, key=lambda item: item.total, reverse=True)[:5], 1):
-        lines.append(f"| {index} | [{app.title}]({rel(app.readme_path)}) | {yuan(app.total)} |")
+        lines.append(f"| {index} | [{app.title}]({rel(app.readme_path)}) | {yuan_with_pending(app)} |")
 
     lines.append("")
     lines.append(f"_统计脚本: `scripts/update_stats.py`; 最近统计日期: {date.today().isoformat()}_")

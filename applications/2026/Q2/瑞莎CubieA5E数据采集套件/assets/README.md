@@ -6,12 +6,8 @@
 
 - `radxa-cubie-a5e-view.webp`: Radxa 官方产品外观图。
 - `radxa-cubie-a5e-interface.webp`: Radxa 官方接口标注图。
-- `radxa-camera-4k-view.webp`: Radxa Camera 4K 官方外观图。
-- `radxa-camera-4k-cubie-a5e.webp`: Radxa Camera 4K 连接 Cubie A5E 示意图。
 - `radxa-power-pd30w.webp`: Radxa Power PD 30W 官方产品图。
-- `taobao-a5e-4gb-price.png`: 淘宝桌面版 A5E A527 4GB 商业级规格与价格截图。
-- `taobao-camera-search-price.png`: 淘宝桌面版 Camera 4K 搜索过程截图。
-- `taobao-camera-4k-price.png`: 淘宝桌面版官方店 Camera 4K 价格截图。
+- `taobao-a5e-4gb-price.png`: 淘宝桌面版 A5E 商品页截图。注意: 图中 `¥161.99` 为 1GB 商业级起售价，不能作为 4GB 商业级价格。
 - `taobao-pd30w-price.png`: 淘宝桌面版官方店 Power PD 30W 价格截图。
 
 待补充：
