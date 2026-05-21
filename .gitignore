@@ -1,3 +1,40 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Office temporary and lock files
 ~$*.docx
+~$*.xlsx
+~$*.pptx
+*.tmp
+*.temp
+
+# Python
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments and secrets
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Logs and local reports
+*.log
+*.bak
+*.swp
+*.swo
+
+# Large raw experiment data should live outside this proposal ledger.
+# Keep curated screenshots and proof images under applications/*/assets/.
+data/
+datasets/
+raw-data/
+raw_data/
+exports/
