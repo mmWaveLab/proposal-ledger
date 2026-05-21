@@ -148,6 +148,16 @@ def yuan_with_pending(app: Application) -> str:
     return f"{yuan(app.total)}{suffix}"
 
 
+def price_state(app: Application) -> str:
+    if app.has_pending_price and app.total > 0:
+        return "部分确认"
+    if app.has_pending_price:
+        return "待复核"
+    if app.total > 0:
+        return "已确认"
+    return "未填写"
+
+
 def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
 
@@ -160,17 +170,24 @@ def build_stats(apps: list[Application]) -> str:
         period: sum(app.total for app in apps if f"{app.year}/{app.quarter}" == period)
         for period in period_counts
     }
-    known_prices = [app for app in apps if app.total > 0]
-    average = total_amount / len(known_prices) if known_prices else 0.0
+    complete_prices = [app for app in apps if app.total > 0 and not app.has_pending_price]
+    partial_prices = [app for app in apps if app.total > 0 and app.has_pending_price]
+    pending_prices = [app for app in apps if app.has_pending_price]
+    average_complete = (
+        sum(app.total for app in complete_prices) / len(complete_prices)
+        if complete_prices
+        else 0.0
+    )
     success_apps = status_counts.get("成功", 0)
     success_rate = success_apps / len(apps) * 100 if apps else 0.0
 
     lines = [
         f"- 申报总数: {len(apps)}",
         f"- 已确认价格总额: {yuan(total_amount)}",
-        f"- 含待复核价格申报数: {sum(1 for app in apps if app.has_pending_price)}",
-        f"- 已填价格申报数: {len(known_prices)}",
-        f"- 平均价格: {yuan(average)}",
+        f"- 完整价格申报数: {len(complete_prices)}",
+        f"- 部分确认金额申报数: {len(partial_prices)}",
+        f"- 待复核金额申报数: {len(pending_prices)}",
+        f"- 完整价格平均值: {yuan(average_complete)}",
         f"- 成功率: {success_rate:.1f}%",
         "",
         "| 状态 | 数量 |",
@@ -194,8 +211,8 @@ def build_stats(apps: list[Application]) -> str:
     lines.extend(
         [
             "",
-            "| 申报 | 归档 | 状态 | 成功情况 | 价格 | 申报书 |",
-            "| --- | --- | --- | --- | ---: | --- |",
+            "| 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 申报书 |",
+            "| --- | --- | --- | --- | --- | ---: | --- |",
         ]
     )
 
@@ -203,8 +220,21 @@ def build_stats(apps: list[Application]) -> str:
         readme_link = f"[{app.title}]({rel(app.readme_path)})"
         doc_link = f"[docx]({rel(app.doc_path)})" if app.doc_path else "缺失"
         lines.append(
-            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {yuan_with_pending(app)} | {doc_link} |"
+            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {price_state(app)} | {yuan_with_pending(app)} | {doc_link} |"
         )
+
+    if pending_prices:
+        lines.extend(
+            [
+                "",
+                "| 待复核事项 | 当前已确认金额 | 说明 |",
+                "| --- | ---: | --- |",
+            ]
+        )
+        for app in sorted(pending_prices, key=lambda item: (item.year, item.quarter, item.title)):
+            lines.append(
+                f"| [{app.title}]({rel(app.readme_path)}) | {yuan(app.total)} | 需要补齐待复核项后再作为完整预算使用 |"
+            )
 
     lines.extend(
         [
