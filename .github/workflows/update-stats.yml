@@ -1,0 +1,29 @@
+name: Update proposal statistics
+
+on:
+  push:
+    paths:
+      - "applications/**"
+      - "scripts/update_stats.py"
+      - "README.md"
+      - ".github/workflows/update-stats.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate statistics
+        run: python3 scripts/update_stats.py
+
+      - name: Commit updated README
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update proposal statistics"
+          file_pattern: README.md
