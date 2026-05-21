@@ -11,10 +11,41 @@ ROOT = Path(__file__).resolve().parents[1]
 APPLICATIONS_DIR = ROOT / "applications"
 REQUIRED_FIELDS = ["申报状态", "申报结果", "成功情况", "负责人", "申报书"]
 REQUIRED_SECTIONS = ["## 图片文案资料", "## 申报成功情况", "## 价格情况"]
+LOCAL_LINK = re.compile(r"(!?)\[[^\]]+\]\(([^)]+)\)")
 
 
 def has_field(text: str, field: str) -> bool:
     return bool(re.search(rf"^- {re.escape(field)}:\s*.+$", text, re.MULTILINE))
+
+
+def is_external_link(target: str) -> bool:
+    return bool(re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I)) or target.startswith("#")
+
+
+def clean_link_target(target: str) -> str:
+    target = target.strip()
+    if target.startswith("<") and target.endswith(">"):
+        target = target[1:-1]
+    return target.split("#", 1)[0].strip()
+
+
+def validate_local_links(readme: Path, text: str) -> list[str]:
+    errors: list[str] = []
+    rel = readme.relative_to(ROOT)
+    for is_image, raw_target in LOCAL_LINK.findall(text):
+        target = clean_link_target(raw_target)
+        if not target or is_external_link(target):
+            continue
+        path = (readme.parent / target).resolve()
+        try:
+            path.relative_to(readme.parent.resolve())
+        except ValueError:
+            errors.append(f"{rel}: 本地链接越出申报目录 `{raw_target}`")
+            continue
+        if not path.exists():
+            kind = "图片" if is_image else "链接"
+            errors.append(f"{rel}: {kind}目标不存在 `{raw_target}`")
+    return errors
 
 
 def validate_docx(path: Path) -> list[str]:
@@ -35,6 +66,10 @@ def validate_application(readme: Path) -> list[str]:
     errors: list[str] = []
     rel = readme.relative_to(ROOT)
     text = readme.read_text(encoding="utf-8")
+    parts = readme.relative_to(APPLICATIONS_DIR).parts
+
+    if len(parts) < 3 or not re.fullmatch(r"\d{4}", parts[0]) or not re.fullmatch(r"Q[1-4]", parts[1]):
+        errors.append(f"{rel}: 路径应为 applications/YYYY/QN/物品名称/README.md")
 
     if not re.search(r"^#\s+.+$", text, re.MULTILINE):
         errors.append(f"{rel}: 缺少一级标题")
@@ -55,6 +90,10 @@ def validate_application(readme: Path) -> list[str]:
         for header in ["数量", "单价(CNY)", "小计(CNY)"]:
             if header not in price_text:
                 errors.append(f"{rel}: 价格表缺少 `{header}` 列")
+        if not re.search(r"^\|\s*(合计|总计)\s*\|", price_text, re.MULTILINE):
+            errors.append(f"{rel}: 价格表缺少 `合计` 行")
+
+    errors.extend(validate_local_links(readme, text))
 
     docx_files = sorted(readme.parent.glob("*.docx"))
     if not docx_files:

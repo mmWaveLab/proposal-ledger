@@ -18,7 +18,7 @@
 6. 放图片：DOCX 中应插入关键商品图或官方图，README 的 `assets/` 中保存官方图、淘宝价格图、后续订单/到货/验收图。
 7. 统一字体：正文中文用宋体，标题用黑体，英文和数字用 Times New Roman；正文建议 11pt，避免依赖非 Windows 常见字体。
 8. 更新统计：运行 `scripts/update_stats.py`，确保主 README 的总额、季度、排名和状态自动更新。
-9. 质检：运行 `scripts/validate_ledger.py`；DOCX 必须能被解压校验，能渲染时用 documents skill 的 `render_docx.py` 生成页面图并目视检查。
+9. 质检：运行 `scripts/validate_ledger.py`；它会检查目录层级、必填字段、价格表、本地链接和 DOCX 结构。能渲染时用 documents skill 的 `render_docx.py` 生成页面图并目视检查。
 
 ## 写作原则
 

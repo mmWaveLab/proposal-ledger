@@ -26,6 +26,7 @@ class Application:
     success: str
     total: float
     has_pending_price: bool
+    pending_items: list[str]
     readme_path: Path
     doc_path: Path | None
 
@@ -59,10 +60,10 @@ def normalize_status(app: Application) -> str:
     return app.status or "未分类"
 
 
-def parse_price_table(text: str) -> tuple[float, bool]:
+def parse_price_table(text: str) -> tuple[float, bool, list[str]]:
     section = re.search(r"## 价格情况\s*(.*?)(?:\n## |\Z)", text, re.S)
     if not section:
-        return 0.0, False
+        return 0.0, False, []
 
     rows = []
     for line in section.group(1).splitlines():
@@ -74,30 +75,38 @@ def parse_price_table(text: str) -> tuple[float, bool]:
             rows.append(cells)
 
     if len(rows) < 2:
-        return 0.0, False
+        return 0.0, False, []
 
     headers = rows[0]
     total = 0.0
     has_pending = False
+    pending_items: list[str] = []
     for cells in rows[1:]:
         first = cells[0] if cells else ""
+        is_total_row = "合计" in first or "总计" in first
         subtotal = None
         quantity = None
         unit_price = None
+        row_has_pending = False
         for index, header in enumerate(headers):
             value = cells[index] if index < len(cells) else ""
             if "小计" in header or "金额" in header:
                 if re.search(r"待复核|待确认|待补充", value):
                     has_pending = True
+                    row_has_pending = True
                 subtotal = parse_money(value)
             elif "数量" in header:
                 quantity = parse_money(value)
             elif "单价" in header:
                 if re.search(r"待复核|待确认|待补充", value):
                     has_pending = True
+                    row_has_pending = True
                 unit_price = parse_money(value)
 
-        if "合计" in first or "总计" in first:
+        if row_has_pending and not is_total_row and first:
+            pending_items.append(first)
+
+        if is_total_row:
             continue
 
         if subtotal is not None and subtotal > 0:
@@ -105,7 +114,7 @@ def parse_price_table(text: str) -> tuple[float, bool]:
         elif quantity is not None and unit_price is not None:
             total += quantity * unit_price
 
-    return total, has_pending
+    return total, has_pending, sorted(set(pending_items))
 
 
 def load_applications() -> list[Application]:
@@ -118,7 +127,7 @@ def load_applications() -> list[Application]:
         year = parts[0] if len(parts) >= 3 else "未归档"
         quarter = parts[1] if len(parts) >= 3 else "未归档"
         text = readme.read_text(encoding="utf-8")
-        total, has_pending_price = parse_price_table(text)
+        total, has_pending_price, pending_items = parse_price_table(text)
         title_match = re.search(r"^#\s+(.+?)\s*$", text, re.MULTILINE)
         title = title_match.group(1).strip() if title_match else readme.parent.name
         doc_candidates = sorted(readme.parent.glob("*.docx"))
@@ -132,6 +141,7 @@ def load_applications() -> list[Application]:
             success=extract_field(text, "成功情况"),
             total=total,
             has_pending_price=has_pending_price,
+            pending_items=pending_items,
             readme_path=readme,
             doc_path=doc_candidates[0] if doc_candidates else None,
         )
@@ -232,8 +242,9 @@ def build_stats(apps: list[Application]) -> str:
             ]
         )
         for app in sorted(pending_prices, key=lambda item: (item.year, item.quarter, item.title)):
+            pending_note = "、".join(app.pending_items) if app.pending_items else "价格表中存在待复核金额"
             lines.append(
-                f"| [{app.title}]({rel(app.readme_path)}) | {yuan(app.total)} | 需要补齐待复核项后再作为完整预算使用 |"
+                f"| [{app.title}]({rel(app.readme_path)}) | {yuan(app.total)} | 待复核: {pending_note} |"
             )
 
     lines.extend(
