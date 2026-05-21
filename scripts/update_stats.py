@@ -18,6 +18,8 @@ END = "<!-- stats:end -->"
 @dataclass
 class Application:
     slug: str
+    year: str
+    quarter: str
     title: str
     status: str
     result: str
@@ -102,13 +104,21 @@ def parse_price_table(text: str) -> float:
 
 def load_applications() -> list[Application]:
     apps = []
-    for readme in sorted(APPLICATIONS_DIR.glob("*/README.md")):
+    for readme in sorted(APPLICATIONS_DIR.glob("**/README.md")):
+        if readme.parent.name == "assets":
+            continue
+
+        parts = readme.relative_to(APPLICATIONS_DIR).parts
+        year = parts[0] if len(parts) >= 3 else "未归档"
+        quarter = parts[1] if len(parts) >= 3 else "未归档"
         text = readme.read_text(encoding="utf-8")
         title_match = re.search(r"^#\s+(.+?)\s*$", text, re.MULTILINE)
         title = title_match.group(1).strip() if title_match else readme.parent.name
         doc_candidates = sorted(readme.parent.glob("*.docx"))
         app = Application(
             slug=readme.parent.name,
+            year=year,
+            quarter=quarter,
             title=title,
             status=extract_field(text, "申报状态"),
             result=extract_field(text, "申报结果"),
@@ -132,6 +142,11 @@ def rel(path: Path) -> str:
 def build_stats(apps: list[Application]) -> str:
     total_amount = sum(app.total for app in apps)
     status_counts = Counter(normalize_status(app) for app in apps)
+    period_counts = Counter(f"{app.year}/{app.quarter}" for app in apps)
+    period_amounts = {
+        period: sum(app.total for app in apps if f"{app.year}/{app.quarter}" == period)
+        for period in period_counts
+    }
     known_prices = [app for app in apps if app.total > 0]
     average = total_amount / len(known_prices) if known_prices else 0.0
     success_apps = status_counts.get("成功", 0)
@@ -154,8 +169,18 @@ def build_stats(apps: list[Application]) -> str:
     lines.extend(
         [
             "",
-            "| 申报 | 状态 | 成功情况 | 价格 | 申报书 |",
-            "| --- | --- | --- | ---: | --- |",
+            "| 季度 | 申报数 | 金额 |",
+            "| --- | ---: | ---: |",
+        ]
+    )
+    for period, count in sorted(period_counts.items()):
+        lines.append(f"| {period} | {count} | {yuan(period_amounts[period])} |")
+
+    lines.extend(
+        [
+            "",
+            "| 申报 | 归档 | 状态 | 成功情况 | 价格 | 申报书 |",
+            "| --- | --- | --- | --- | ---: | --- |",
         ]
     )
 
@@ -163,7 +188,7 @@ def build_stats(apps: list[Application]) -> str:
         readme_link = f"[{app.title}]({rel(app.readme_path)})"
         doc_link = f"[docx]({rel(app.doc_path)})" if app.doc_path else "缺失"
         lines.append(
-            f"| {readme_link} | {app.status} | {app.success} | {yuan(app.total)} | {doc_link} |"
+            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {yuan(app.total)} | {doc_link} |"
         )
 
     lines.extend(
