@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APPLICATIONS_DIR = ROOT / "applications"
 REQUIRED_FIELDS = ["申报状态", "申报结果", "成功情况", "负责人", "申报书"]
 REQUIRED_SECTIONS = ["## 图片文案资料", "## 申报成功情况", "## 价格情况"]
+REQUIRED_DOC_HEADINGS = ["一、需求分析", "二、目的用途", "三、实现目标", "经费数量", "四、取得效果或结果", "五、其他"]
 LOCAL_LINK = re.compile(r"(!?)\[[^\]]+\]\(([^)]+)\)")
 
 
@@ -62,6 +63,21 @@ def validate_docx(path: Path) -> list[str]:
     return errors
 
 
+def validate_source_md(path: Path) -> list[str]:
+    errors: list[str] = []
+    if not path.exists():
+        return [f"缺少申报书源文件: {path.relative_to(ROOT)}"]
+    text = path.read_text(encoding="utf-8")
+    headings = re.findall(r"^##\s+(.+?)\s*$", text, re.MULTILINE)
+    if headings != REQUIRED_DOC_HEADINGS:
+        errors.append(
+            f"{path.relative_to(ROOT)}: 申报书源文件二级标题必须严格为 "
+            + "、".join(REQUIRED_DOC_HEADINGS)
+        )
+    errors.extend(validate_local_links(path, text))
+    return errors
+
+
 def validate_application(readme: Path) -> list[str]:
     errors: list[str] = []
     rel = readme.relative_to(ROOT)
@@ -94,6 +110,7 @@ def validate_application(readme: Path) -> list[str]:
             errors.append(f"{rel}: 价格表缺少 `合计` 行")
 
     errors.extend(validate_local_links(readme, text))
+    errors.extend(validate_source_md(readme.parent / "申报书.md"))
 
     docx_files = sorted(readme.parent.glob("*.docx"))
     if not docx_files:
