@@ -5,7 +5,6 @@
 当前已保存：
 
 - `taobao-bga200-stencil.png`
-- `taobao-lpddr4x-4g.png`
 
 待补充：
 

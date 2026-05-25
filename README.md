@@ -51,17 +51,17 @@ python3 scripts/validate_ledger.py
 | 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 申报书 |
 | --- | --- | --- | --- | --- | ---: | --- |
 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥2,969.00 | [docx](applications/2026/Q2/树莓派SSD计算套件/申报书.docx) |
-| [12导联采集板元器件采购](applications/2026/Q2/12导联采集板元器件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥792.70 | [docx](applications/2026/Q2/12导联采集板元器件/申报书.docx) |
-| [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥222.00 | [docx](applications/2026/Q2/BGA200内存返修工具/申报书.docx) |
+| [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥847.70 | [docx](applications/2026/Q2/实验室电子元器件采集/申报书.docx) |
 | [双网口数据采集计算终端套件采购](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.99 | [docx](applications/2026/Q2/瑞莎CubieA5E数据采集套件/申报书.docx) |
+| [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.00 | [docx](applications/2026/Q2/BGA200内存返修工具/申报书.docx) |
 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥49.00 | [docx](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/申报书.docx) |
 
 | 排名 | 申报 | 价格 |
 | ---: | --- | ---: |
 | 1 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | ¥2,969.00 |
-| 2 | [12导联采集板元器件采购](applications/2026/Q2/12导联采集板元器件/README.md) | ¥792.70 |
-| 3 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | ¥222.00 |
-| 4 | [双网口数据采集计算终端套件采购](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | ¥167.99 |
+| 2 | [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | ¥847.70 |
+| 3 | [双网口数据采集计算终端套件采购](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | ¥167.99 |
+| 4 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | ¥167.00 |
 | 5 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | ¥49.00 |
 
 _统计脚本: `scripts/update_stats.py`; 最近统计日期: 2026-05-25_

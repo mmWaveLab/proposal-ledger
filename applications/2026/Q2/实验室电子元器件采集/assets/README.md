@@ -7,6 +7,7 @@
 - `lcsc-cart-20260525.xls`
 - `lcsc-cart-20260525.csv`
 - `lcsc-cart-summary.png`
+- `taobao-lpddr4x-4g.png`: 淘宝桌面版 4G LPDDR4X FBGA200 内存颗粒价格截图。
 
 待补充：
 
