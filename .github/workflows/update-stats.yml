@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   update-stats:
@@ -44,6 +45,17 @@ jobs:
           name: proposal-docx
           path: exports/proposal-docx/**/*.docx
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Delete older proposal DOCX artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          gh api "repos/$REPO/actions/artifacts?name=proposal-docx&per_page=100" \
+            --jq ".artifacts[] | select(.workflow_run.id != $RUN_ID) | .id" \
+            | xargs -r -n1 -I{} gh api -X DELETE "repos/$REPO/actions/artifacts/{}"
 
       - name: Commit updated README
         uses: stefanzweifel/git-auto-commit-action@v5
