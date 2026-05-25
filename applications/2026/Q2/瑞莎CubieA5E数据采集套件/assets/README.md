@@ -4,7 +4,6 @@
 
 当前已保存：
 
-- `radxa-cubie-a5e-view.webp`: Radxa 官方产品外观图。
 - `radxa-cubie-a5e-interface.webp`: Radxa 官方接口标注图。
 - `taobao-a5e-1gb-price.png`: 淘宝桌面版 A5E A527 1GB 商业级价格截图，价格 ¥161.99。
 
