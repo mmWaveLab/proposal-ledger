@@ -11,4 +11,4 @@
 
 待补充：
 
-- `radar-usb3-connection.png`: 雷达 LVDS 前端与自研 1Gbps USB3.0 采集卡连接关系图。
+- `radar-usb3-connection.png`: 雷达 LVDS 前端与自制 USB3.0 采集卡连接关系图。
