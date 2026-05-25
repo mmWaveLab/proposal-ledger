@@ -15,7 +15,7 @@
 3. 抓价格：用淘宝桌面版短关键词搜索，记录店铺、规格、价格、付款人数和截图；不要把宽泛搜索词写进最终证据。
 4. 写 README：包含图片文案资料、资料提取结论、申报成功情况、价格情况、采购理由、使用计划、验收标准。
 5. 写申报书源文件：优先维护 `申报书.md`，方便 Git diff 和审查；二级标题只能是 `一、需求分析`、`二、目的用途`、`三、实现目标`、`经费数量`、`四、取得效果或结果`、`五、其他`。
-6. 生成 DOCX：运行 `python3 scripts/generate_proposal_docx.py 项目目录`，文件名统一为 `物品名称-申报书.docx`，其中物品名称优先使用项目文件夹名。
+6. 生成 DOCX：运行 `python3 scripts/generate_proposal_docx.py 项目目录`，默认输出到 `exports/proposal-docx/YYYY/QN/物品名称/物品名称-申报书.docx`；DOCX 是生成产物，不提交到 Git。
 7. 放图片：在 `申报书.md` 中用 Markdown 图片语法引用关键商品图或官方图，例如 `![商品截图](assets/example.png)`；README 的 `assets/` 中保存官方图、淘宝价格图、后续订单/到货/验收图。
 8. 统一字体：生成脚本会将正文中文设为宋体，标题设为黑体，英文和数字设为 Times New Roman，避免依赖非 Windows 常见字体。
 9. 更新统计：运行 `scripts/update_stats.py`，确保主 README 的总额、季度、排名和状态自动更新。

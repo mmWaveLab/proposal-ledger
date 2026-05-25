@@ -6,6 +6,7 @@ Icon?
 
 # Office temporary and lock files
 ~$*.docx
+applications/**/*.docx
 ~$*.xlsx
 ~$*.pptx
 *.tmp

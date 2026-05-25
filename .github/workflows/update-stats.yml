@@ -4,7 +4,11 @@ on:
   push:
     paths:
       - "applications/**"
+      - "requirements.txt"
+      - "scripts/generate_proposal_docx.py"
       - "scripts/update_stats.py"
+      - "scripts/validate_ledger.py"
+      - "scripts/review_proposals.py"
       - "README.md"
       - ".github/workflows/update-stats.yml"
   workflow_dispatch:
@@ -23,7 +27,7 @@ jobs:
         run: python3 -m pip install -r requirements.txt
 
       - name: Generate proposal DOCX files
-        run: python3 scripts/generate_proposal_docx.py --all
+        run: python3 scripts/generate_proposal_docx.py --all --output-dir exports/proposal-docx
 
       - name: Generate statistics
         run: python3 scripts/update_stats.py
@@ -34,8 +38,15 @@ jobs:
       - name: Review proposal wording
         run: python3 scripts/review_proposals.py
 
+      - name: Upload generated DOCX files
+        uses: actions/upload-artifact@v4
+        with:
+          name: proposal-docx
+          path: exports/proposal-docx/**/*.docx
+          if-no-files-found: error
+
       - name: Commit updated README
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update proposal statistics"
-          file_pattern: README.md applications/**/*.docx
+          file_pattern: README.md

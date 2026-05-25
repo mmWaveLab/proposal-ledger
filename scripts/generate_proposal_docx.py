@@ -19,6 +19,7 @@ except ModuleNotFoundError as exc:
 
 ROOT = Path(__file__).resolve().parents[1]
 APPLICATIONS_DIR = ROOT / "applications"
+DEFAULT_OUTPUT_DIR = ROOT / "exports" / "proposal-docx"
 SOURCE_NAME = "申报书.md"
 REQUIRED_HEADINGS = [
     "一、需求分析",
@@ -179,9 +180,10 @@ def add_image(doc: Document, source: Path, line: str) -> None:
         add_para(doc, f"图片文件缺失：{target}", first_line=False, size=10.5)
 
 
-def generate(source: Path) -> Path:
+def generate(source: Path, output_dir: Path) -> Path:
     app_dir = source.parent
-    output = app_dir / f"{app_dir.name}-申报书.docx"
+    output = output_dir / app_dir.relative_to(APPLICATIONS_DIR) / f"{app_dir.name}-申报书.docx"
+    output.parent.mkdir(parents=True, exist_ok=True)
     lines = source.read_text(encoding="utf-8").splitlines()
     doc = setup_document()
 
@@ -251,6 +253,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate proposal DOCX files from 申报书.md")
     parser.add_argument("paths", nargs="*", help="application directories or 申报书.md files")
     parser.add_argument("--all", action="store_true", help="generate every applications/**/申报书.md")
+    parser.add_argument(
+        "--output-dir",
+        default=str(DEFAULT_OUTPUT_DIR),
+        help="output directory for generated DOCX files, default: exports/proposal-docx",
+    )
     parser.add_argument("--check-source", action="store_true", help="only validate source structure")
     args = parser.parse_args()
 
@@ -267,8 +274,11 @@ def main() -> int:
         print(f"Proposal source validation passed: {len(sources)} source file(s)")
         return 0
 
+    output_dir = Path(args.output_dir)
+    if not output_dir.is_absolute():
+        output_dir = ROOT / output_dir
     for source in sources:
-        output = generate(source)
+        output = generate(source, output_dir)
         print(output.relative_to(ROOT))
     return 0
 

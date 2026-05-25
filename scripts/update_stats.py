@@ -28,7 +28,7 @@ class Application:
     has_pending_price: bool
     pending_items: list[str]
     readme_path: Path
-    doc_path: Path | None
+    source_path: Path
 
 
 def parse_money(value: str) -> float:
@@ -130,7 +130,6 @@ def load_applications() -> list[Application]:
         total, has_pending_price, pending_items = parse_price_table(text)
         title_match = re.search(r"^#\s+(.+?)\s*$", text, re.MULTILINE)
         title = title_match.group(1).strip() if title_match else readme.parent.name
-        doc_candidates = sorted(readme.parent.glob("*.docx"))
         app = Application(
             slug=readme.parent.name,
             year=year,
@@ -143,7 +142,7 @@ def load_applications() -> list[Application]:
             has_pending_price=has_pending_price,
             pending_items=pending_items,
             readme_path=readme,
-            doc_path=doc_candidates[0] if doc_candidates else None,
+            source_path=readme.parent / "申报书.md",
         )
         apps.append(app)
     return apps
@@ -221,14 +220,15 @@ def build_stats(apps: list[Application]) -> str:
     lines.extend(
         [
             "",
-            "| 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 申报书 |",
+            "| 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 源文件 / DOCX |",
             "| --- | --- | --- | --- | --- | ---: | --- |",
         ]
     )
 
     for app in sorted(apps, key=lambda item: item.total, reverse=True):
         readme_link = f"[{app.title}]({rel(app.readme_path)})"
-        doc_link = f"[docx]({rel(app.doc_path)})" if app.doc_path else "缺失"
+        source_link = f"[md]({rel(app.source_path)})" if app.source_path.exists() else "源文件缺失"
+        doc_link = f"{source_link} / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml)"
         lines.append(
             f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {price_state(app)} | {yuan_with_pending(app)} | {doc_link} |"
         )
