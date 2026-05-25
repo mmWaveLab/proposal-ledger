@@ -33,11 +33,11 @@ python3 scripts/validate_ledger.py
 
 <!-- stats:start -->
 - 申报总数: 5
-- 已确认价格总额: ¥4,194.69
+- 已确认价格总额: ¥4,334.10
 - 完整价格申报数: 5
 - 部分确认金额申报数: 0
 - 待复核金额申报数: 0
-- 完整价格平均值: ¥838.94
+- 完整价格平均值: ¥866.82
 - 成功率: 0.0%
 
 | 状态 | 数量 |
@@ -46,12 +46,12 @@ python3 scripts/validate_ledger.py
 
 | 季度 | 申报数 | 金额 |
 | --- | ---: | ---: |
-| 2026/Q2 | 5 | ¥4,194.69 |
+| 2026/Q2 | 5 | ¥4,334.10 |
 
 | 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 申报书 |
 | --- | --- | --- | --- | --- | ---: | --- |
 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥2,969.00 | [docx](applications/2026/Q2/树莓派SSD计算套件/申报书.docx) |
-| [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥847.70 | [docx](applications/2026/Q2/实验室电子元器件采集/申报书.docx) |
+| [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥987.11 | [docx](applications/2026/Q2/实验室电子元器件采集/申报书.docx) |
 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.00 | [docx](applications/2026/Q2/BGA200内存返修工具/申报书.docx) |
 | [双网口数据采集计算终端套件采购](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥161.99 | [docx](applications/2026/Q2/瑞莎CubieA5E数据采集套件/申报书.docx) |
 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥49.00 | [docx](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/申报书.docx) |
@@ -59,7 +59,7 @@ python3 scripts/validate_ledger.py
 | 排名 | 申报 | 价格 |
 | ---: | --- | ---: |
 | 1 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | ¥2,969.00 |
-| 2 | [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | ¥847.70 |
+| 2 | [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | ¥987.11 |
 | 3 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | ¥167.00 |
 | 4 | [双网口数据采集计算终端套件采购](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | ¥161.99 |
 | 5 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | ¥49.00 |

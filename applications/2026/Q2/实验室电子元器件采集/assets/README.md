@@ -8,6 +8,8 @@
 - `lcsc-cart-20260525.csv`
 - `lcsc-cart-summary.png`
 - `taobao-lpddr4x-4g.png`: 淘宝桌面版 4G LPDDR4X FBGA200 内存颗粒价格截图。
+- `taobao-rtl8723ds-wifi-bt.png`: 淘宝桌面版 RTL8723DS WiFi/BT 模块价格截图。
+- `taobao-6p9-mipi-display.png`: 淘宝桌面版 6.9 寸 MIPI 触摸显示屏价格截图。
 
 待补充：
 
