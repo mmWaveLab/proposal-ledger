@@ -5,7 +5,7 @@
 - 申报结果: 待补充
 - 成功情况: 待补充
 - 负责人: 待补充
-- 申报书: [申报书.docx](./申报书.docx)
+- 申报书: [TangPrimer25K雷达LVDS采集FPGA-申报书.docx](./TangPrimer25K雷达LVDS采集FPGA-申报书.docx)
 
 ## 图片文案资料
 

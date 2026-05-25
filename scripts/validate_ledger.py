@@ -99,6 +99,14 @@ def validate_application(readme: Path) -> list[str]:
     if not docx_files:
         errors.append(f"{rel}: 目录中没有 DOCX 申报书")
     else:
+        expected_docx = f"{readme.parent.name}-申报书.docx"
+        matching_docx = [path for path in docx_files if path.name == expected_docx]
+        if not matching_docx:
+            found = "、".join(path.name for path in docx_files)
+            errors.append(f"{rel}: DOCX 文件名应为 `{expected_docx}`，当前为 `{found}`")
+        if len(docx_files) > 1:
+            found = "、".join(path.name for path in docx_files)
+            errors.append(f"{rel}: 目录中应只有一个 DOCX 申报书，当前为 `{found}`")
         errors.extend(validate_docx(docx_files[0]))
 
     return errors
