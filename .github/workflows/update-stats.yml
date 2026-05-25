@@ -30,6 +30,11 @@ jobs:
       - name: Generate proposal DOCX files
         run: python3 scripts/generate_proposal_docx.py --all --output-dir exports/proposal-docx
 
+      - name: Package generated DOCX files
+        run: |
+          cd exports/proposal-docx
+          zip -r ../proposal-docx.zip .
+
       - name: Generate statistics
         run: python3 scripts/update_stats.py
 
@@ -56,6 +61,14 @@ jobs:
           gh api "repos/$REPO/actions/artifacts?name=proposal-docx&per_page=100" \
             --jq ".artifacts[] | select(.workflow_run.id != $RUN_ID) | .id" \
             | xargs -r -n1 -I{} gh api -X DELETE "repos/$REPO/actions/artifacts/{}"
+
+      - name: Publish latest proposal DOCX release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view proposal-docx-latest >/dev/null 2>&1 \
+            || gh release create proposal-docx-latest --title "Latest proposal DOCX" --notes "Automatically generated latest DOCX package."
+          gh release upload proposal-docx-latest exports/proposal-docx.zip --clobber
 
       - name: Commit updated README
         uses: stefanzweifel/git-auto-commit-action@v5

@@ -30,7 +30,7 @@ python3 scripts/validate_ledger.py
 python3 scripts/review_proposals.py
 ```
 
-申报书正文优先维护 `applications/YYYY/QN/物品名称/申报书.md`。需要交付给导师时，运行 `scripts/generate_proposal_docx.py --all` 生成 `exports/proposal-docx/**/物品名称-申报书.docx`。GitHub Actions 每次也会自动生成并上传 `proposal-docx` 云端下载包：打开 [Update proposal statistics](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) 的最新运行，在 Artifacts 中下载 `proposal-docx`。
+申报书正文优先维护 `applications/YYYY/QN/物品名称/申报书.md`。需要交付给导师时，运行 `scripts/generate_proposal_docx.py --all` 生成 `exports/proposal-docx/**/物品名称-申报书.docx`。GitHub Actions 每次也会自动生成并上传云端下载包，可直接下载：[proposal-docx.zip](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip)。备用入口是 [Update proposal statistics](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) 最新运行的 Artifacts。
 
 统计里的“已确认价格总额”只汇总已经能落到具体金额的行；如果某个项目仍有规格价待复核，会显示为“部分确认”或“待复核”，避免把起售价误当成完整预算。
 校验脚本会检查申报目录层级、必填字段、价格表列、合计行、`申报书.md` 标题和本地图片/文件链接，并阻止 DOCX 生成产物进入申报目录。审查脚本会检查申报书中是否残留报销流程话术、内部素材备注、待补充痕迹和过于基础的调试目标。
@@ -58,11 +58,11 @@ python3 scripts/review_proposals.py
 
 | 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 源文件 / DOCX |
 | --- | --- | --- | --- | --- | ---: | --- |
-| [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥2,969.00 | [md](applications/2026/Q2/树莓派SSD计算套件/申报书.md) / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) |
-| [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥1,974.22 | [md](applications/2026/Q2/实验室电子元器件采集/申报书.md) / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) |
-| [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.00 | [md](applications/2026/Q2/BGA200内存返修工具/申报书.md) / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) |
-| [瑞莎 Radxa Cubie A5E 迷你主板](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥161.99 | [md](applications/2026/Q2/瑞莎CubieA5E数据采集套件/申报书.md) / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) |
-| [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥49.00 | [md](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/申报书.md) / [云端 docx](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) |
+| [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥2,969.00 | [md](applications/2026/Q2/树莓派SSD计算套件/申报书.md) / [下载 docx](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip) |
+| [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥1,974.22 | [md](applications/2026/Q2/实验室电子元器件采集/申报书.md) / [下载 docx](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip) |
+| [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.00 | [md](applications/2026/Q2/BGA200内存返修工具/申报书.md) / [下载 docx](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip) |
+| [瑞莎 Radxa Cubie A5E 迷你主板](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥161.99 | [md](applications/2026/Q2/瑞莎CubieA5E数据采集套件/申报书.md) / [下载 docx](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip) |
+| [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥49.00 | [md](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/申报书.md) / [下载 docx](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip) |
 
 | 排名 | 申报 | 价格 |
 | ---: | --- | ---: |
