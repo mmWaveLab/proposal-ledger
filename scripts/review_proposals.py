@@ -36,6 +36,12 @@ DOCX_RULES = [
         "申报书不要保留内部工作备注、素材说明或待补充痕迹；改成可交付正文。",
     ),
     Rule(
+        "DOCX-EVIDENCE-WORDING",
+        "error",
+        re.compile(r"图片凭证|凭证材料|价格凭证"),
+        "商品图和截图不能写成凭证；改成商品截图、价格截图、材料图或材料说明。",
+    ),
+    Rule(
         "DOCX-BASIC-DEBUG",
         "error",
         re.compile(r"点灯|基础点灯|建立.*?工程|烧录测试|基础 Python|系统启动"),
@@ -54,7 +60,7 @@ README_RULES = [
     Rule(
         "README-DOCX-HINT",
         "warning",
-        re.compile(r"申报书.*?(实际采购金额|发票为准|接口标注|截图识别)"),
+        re.compile(r"申报书.*?(实际采购金额|发票为准|接口标注|截图识别|图片凭证|凭证材料)"),
         "README 可以保存证据流程，但不要指导把这些话写入正式申报书。",
     ),
 ]

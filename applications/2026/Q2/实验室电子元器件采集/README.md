@@ -19,7 +19,7 @@
 
 ### 图片
 
-- 立创购物车价格凭证: ![立创购物车价格凭证](assets/lcsc-cart-summary.png)
+- 立创购物车价格截图: ![立创购物车价格截图](assets/lcsc-cart-summary.png)
 - LPDDR4X 内存颗粒价格截图: ![LPDDR4X 内存颗粒价格截图](assets/taobao-lpddr4x-4g.png)
 - RTL8723DS WiFi/BT 模块价格截图: ![RTL8723DS WiFi/BT 模块价格截图](assets/taobao-rtl8723ds-wifi-bt.png)
 - 6.9 寸 MIPI 触摸显示屏价格截图: ![6.9 寸 MIPI 触摸显示屏价格截图](assets/taobao-6p9-mipi-display.png)
@@ -32,7 +32,7 @@
 
 | 资料项 | 访问结果 | 对申报的作用 |
 | --- | --- | --- |
-| 立创 xls | 可解析 76 项购物车条目，合计 ¥792.70 | 作为元器件预算和清单凭证 |
+| 立创 xls | 可解析 76 项购物车条目，合计 ¥792.70 | 作为元器件预算和清单材料 |
 | 关键 AFE | ADS1298R 5 片，¥367.25 | 支撑 12 导联心电采集核心模拟前端 |
 | 主控与存储 | T113-S3、1G SPI NAND、ESP32-WROOM-32E | 支撑采集控制、数据缓存和无线/串口调试 |
 | 淘宝内存颗粒截图 | MT53D1024M32D4DT-053WT:D，FBGA200 4G，价格 ¥55.00 | 支撑 A5E 升级到 4GB 的板级验证 |
