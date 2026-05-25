@@ -26,6 +26,7 @@
 - 核心板产品图: ![Tang Primer 25K 核心板](assets/tang-primer-25k-core.jpg)
 - Dock 底板产品图: ![Tang Primer 25K Dock](assets/tang-primer-25k-dock.jpg)
 - Dock 顶视图: ![Tang Primer 25K Dock 顶视图](assets/tang-primer-25k-dock-top.jpg)
+- 雷达采集卡实物预览图: ![雷达采集卡实物预览图](assets/radar-acquisition-card-preview.jpg)
 - 待补充: 自研 1Gbps USB3.0 雷达采集卡连接关系图，建议保存到 `assets/radar-usb3-connection.png`。
 
 ### 文案
@@ -43,6 +44,7 @@
 | 淘宝搜索页 | 短搜 `Tang Primer 25K` 记录当前价 `¥49.00`，价格后续以下单页复核 | 支撑预算估算和采购对象 |
 | Sipeed 官方 Wiki | 说明 Tang Primer 25K 核心板与 25K Dock 底板配套，列出 FPGA 和 Dock 参数 | 支撑技术规格和用途论证 |
 | 官方硬件资料页 | 提供规格书、原理图、尺寸图、点位图、3D 模型和管脚资料 | 支撑后续 LVDS 接线、时序约束和采集卡联调 |
+| 实物预览图 | 已保存现有核心板贴合雷达采集卡调试的实物照片 | 支撑“先用现有核心板验证 LVDS 接收”的技术路线 |
 
 ## 申报成功情况
 
@@ -61,10 +63,10 @@
 
 - 用于雷达 LVDS 原始数据采集前端逻辑验证，避免直接在采集卡上集成 FPGA 芯片导致较低成功率。
 - FPGA 适合实现 LVDS 接收、解串、帧同步、缓存、错误计数和测试 pattern 生成。
-- 25K 规模足以开展中小型高速采集链路原型验证，成本低，适合作为可消耗学习和验证平台。
+- 25K 规模足以开展中小型高速采集链路原型验证，成本低，适合作为实验室可复用验证平台。
 - Dock 底板提供 PMOD、插针、USB-C 调试和板载调试器，便于快速接线、烧录和波形验证。
 - 官方提供原理图、点位图、尺寸图和管脚资料，便于和自研 1Gbps USB3.0 雷达采集卡进行接口映射。
-- 可用于学习 Gowin FPGA 工具链、时序约束、LVDS 约束、跨时钟域处理和高速采集链路调试方法。
+- 可形成 Gowin FPGA 工具链、时序约束、LVDS 约束、跨时钟域处理和高速采集链路调试记录。
 
 ## 使用计划
 
