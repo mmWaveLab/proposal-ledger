@@ -39,6 +39,22 @@ function parseReadme(text) {
   return fields;
 }
 
+function extractSourceMeta(markdown) {
+  const meta = {};
+  const lines = markdown.split(/\r?\n/);
+  const cleaned = lines.filter((line) => {
+    const trimmed = line.trim();
+    if (!/^申报日期[:：]/.test(trimmed) || !/申报状态[:：]/.test(trimmed)) return true;
+
+    const date = trimmed.match(/申报日期[:：]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1];
+    const status = trimmed.match(/申报状态[:：]\s*(.+?)\s*$/)?.[1];
+    if (date) meta["申报日期"] = date;
+    if (status) meta["申报状态"] = status;
+    return false;
+  });
+  return { markdown: cleaned.join("\n"), meta };
+}
+
 function tableCount(markdown) {
   return markdown
     .split(/\r?\n/)
@@ -121,6 +137,7 @@ async function main() {
     const relDir = path.relative(applicationsDir, dir).split(path.sep).join("/");
     const sourceRel = path.relative(root, source).split(path.sep).join("/");
     const rawMarkdown = await readFile(source, "utf8");
+    const sourceMeta = extractSourceMeta(rawMarkdown);
     const readmePath = path.join(dir, "README.md");
     let readme = {};
     let readmeText = "";
@@ -131,8 +148,8 @@ async function main() {
       readme = {};
     }
     const totalAmount = extractTotalAmount(readmeText);
-    const embedded = await embedImages(rawMarkdown, dir);
-    const lines = rawMarkdown.split(/\r?\n/);
+    const embedded = await embedImages(sourceMeta.markdown, dir);
+    const lines = sourceMeta.markdown.split(/\r?\n/);
     const paragraphCount = lines.filter((line) => {
       const trimmed = line.trim();
       return trimmed && !trimmed.startsWith("#") && !trimmed.startsWith("|") && !trimmed.startsWith("!");
@@ -141,19 +158,19 @@ async function main() {
     projects.push({
       id: relDir,
       name: path.basename(dir),
-      title: extractTitle(rawMarkdown, path.basename(dir)),
-      displayName: readme["项目名称"] || extractTitle(rawMarkdown, path.basename(dir)),
+      title: extractTitle(sourceMeta.markdown, path.basename(dir)),
+      displayName: readme["项目名称"] || extractTitle(sourceMeta.markdown, path.basename(dir)),
       archive: relDir.split("/").slice(0, 2).join("/"),
       sourceRel,
       markdown: embedded.markdown,
       rawMarkdown,
       images: embedded.images,
-      fields: readme,
+      fields: { ...sourceMeta.meta, ...readme },
       stats: {
         paragraphs: paragraphCount,
         tables: tableCount(rawMarkdown),
         images: embedded.images.length,
-        characters: rawMarkdown.replace(/\s/g, "").length,
+        characters: sourceMeta.markdown.replace(/\s/g, "").length,
         totalAmount,
       },
     });

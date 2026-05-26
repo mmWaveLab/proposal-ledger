@@ -11,7 +11,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 APPLICATIONS_DIR = ROOT / "applications"
 README_PATH = ROOT / "README.md"
-DOCX_DOWNLOAD_URL = "https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip"
 START = "<!-- stats:start -->"
 END = "<!-- stats:end -->"
 
@@ -221,7 +220,7 @@ def build_stats(apps: list[Application]) -> str:
     lines.extend(
         [
             "",
-            "| 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 源文件 / DOCX |",
+            "| 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 源文件 |",
             "| --- | --- | --- | --- | --- | ---: | --- |",
         ]
     )
@@ -229,9 +228,8 @@ def build_stats(apps: list[Application]) -> str:
     for app in sorted(apps, key=lambda item: item.total, reverse=True):
         readme_link = f"[{app.title}]({rel(app.readme_path)})"
         source_link = f"[md]({rel(app.source_path)})" if app.source_path.exists() else "源文件缺失"
-        doc_link = f"{source_link} / [下载 docx]({DOCX_DOWNLOAD_URL})"
         lines.append(
-            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {price_state(app)} | {yuan_with_pending(app)} | {doc_link} |"
+            f"| {readme_link} | {app.year}/{app.quarter} | {app.status} | {app.success} | {price_state(app)} | {yuan_with_pending(app)} | {source_link} |"
         )
 
     if pending_prices:

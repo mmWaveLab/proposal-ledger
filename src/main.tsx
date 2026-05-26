@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import JSZip from "jszip";
-import { CheckCircle2, ChevronDown, Download, PackageCheck, RefreshCcw, Search, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronDown, Download, RefreshCcw, Search } from "lucide-react";
 import type { ProposalData, ProposalProject } from "./types/proposal";
 import { EmojiIcon, type EmojiIconName } from "./lib/emojiIcons";
-import { createProjectDocxBlob, docxFilename, downloadBlob, exportProjectDocx } from "./lib/docxExport";
+import { docxFilename, exportProjectDocx } from "./lib/docxExport";
 import { markdownToHtml } from "./lib/markdown";
 import "./styles.css";
 
@@ -28,7 +27,6 @@ function App() {
   const [query, setQuery] = useState("");
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState("正在读取申报项目...");
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
@@ -59,10 +57,6 @@ function App() {
 
   const groupedProjects = useMemo(() => groupProjects(filteredProjects), [filteredProjects]);
   const selected = projects.find((project) => project.id === selectedId) ?? filteredProjects[0] ?? projects[0];
-  const checkedProjects = useMemo(
-    () => projects.filter((project) => checkedIds.has(project.id)),
-    [checkedIds, projects],
-  );
   const totalAmount = useMemo(
     () => projects.reduce((sum, project) => sum + project.stats.totalAmount, 0),
     [projects],
@@ -73,26 +67,6 @@ function App() {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
       else next.add(key);
-      return next;
-    });
-  }
-
-  function toggleChecked(projectId: string) {
-    setCheckedIds((current) => {
-      const next = new Set(current);
-      if (next.has(projectId)) next.delete(projectId);
-      else next.add(projectId);
-      return next;
-    });
-  }
-
-  function setQuarterChecked(projectIds: string[], checked: boolean) {
-    setCheckedIds((current) => {
-      const next = new Set(current);
-      for (const id of projectIds) {
-        if (checked) next.add(id);
-        else next.delete(id);
-      }
       return next;
     });
   }
@@ -110,26 +84,6 @@ function App() {
     }
   }
 
-  async function handleBatchExport() {
-    if (!checkedProjects.length) return;
-    setExporting(true);
-    setStatus(`正在打包 ${checkedProjects.length} 份 DOCX...`);
-    try {
-      const zip = new JSZip();
-      for (const project of checkedProjects) {
-        const blob = await createProjectDocxBlob(project);
-        zip.file(`${project.archive}/${docxFilename(project)}`, blob);
-      }
-      const packed = await zip.generateAsync({ type: "blob" });
-      downloadBlob(packed, `proposal-docx-${checkedProjects.length}份.zip`);
-      setStatus(`已打包导出 ${checkedProjects.length} 份 DOCX`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "批量导出失败");
-    } finally {
-      setExporting(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#edf2f4] text-slate-950">
       <div className="grid min-h-screen grid-cols-[268px_minmax(0,1fr)] max-[980px]:grid-cols-1">
@@ -142,7 +96,7 @@ function App() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold tracking-normal">DOCX 工作台</div>
-                <div className="text-[11px] text-slate-500">静态预览 · 批量导出</div>
+                <div className="text-[11px] text-slate-500">静态预览 · 单份导出</div>
               </div>
             </div>
 
@@ -166,15 +120,8 @@ function App() {
               />
             </label>
 
-            <div className="mt-3 flex items-center justify-between rounded-md border border-emerald-100 bg-emerald-50/90 px-2.5 py-2 text-xs text-emerald-900">
-              <span>已勾选 {checkedProjects.length} 项</span>
-              <button
-                disabled={!checkedProjects.length}
-                onClick={() => setCheckedIds(new Set())}
-                className="font-semibold text-emerald-700 disabled:opacity-40"
-              >
-                清空
-              </button>
+            <div className="mt-3 rounded-md border border-emerald-100 bg-emerald-50/90 px-2.5 py-2 text-xs text-emerald-900">
+              选择项目后点击“当前”导出单份 DOCX。
             </div>
           </div>
 
@@ -188,10 +135,7 @@ function App() {
                 onToggle={() => toggleOpen(year.key)}
                 depth="year"
               >
-                {year.quarters.map((quarter) => {
-                  const ids = quarter.projects.map((project) => project.id);
-                  const checkedCount = ids.filter((id) => checkedIds.has(id)).length;
-                  return (
+                {year.quarters.map((quarter) => (
                     <AccordionSection
                       key={quarter.key}
                       label={quarter.label}
@@ -199,22 +143,6 @@ function App() {
                       open={openGroups.has(quarter.key)}
                       onToggle={() => toggleOpen(quarter.key)}
                       depth="quarter"
-                      action={
-                        <label
-                          className="flex items-center gap-1.5 text-[11px] text-slate-500"
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checkedCount === ids.length && ids.length > 0}
-                            ref={(node) => {
-                              if (node) node.indeterminate = checkedCount > 0 && checkedCount < ids.length;
-                            }}
-                            onChange={(event) => setQuarterChecked(ids, event.target.checked)}
-                          />
-                          全选
-                        </label>
-                      }
                     >
                       <div className="space-y-1.5 pb-2 pl-2">
                         {quarter.projects.map((project) => (
@@ -222,15 +150,12 @@ function App() {
                             key={project.id}
                             project={project}
                             active={selected?.id === project.id}
-                            checked={checkedIds.has(project.id)}
                             onSelect={() => setSelectedId(project.id)}
-                            onChecked={() => toggleChecked(project.id)}
                           />
                         ))}
                       </div>
                     </AccordionSection>
-                  );
-                })}
+                ))}
               </AccordionSection>
             ))}
           </div>
@@ -240,10 +165,6 @@ function App() {
           <header className="px-4 pb-1 pt-4 max-[760px]:px-3">
             <div className="mx-auto flex max-w-[1312px] items-center justify-between gap-3 rounded-lg border border-white/80 bg-white/72 px-4 py-3 shadow-sm backdrop-blur-xl max-[760px]:items-start max-[760px]:flex-col">
               <div className="min-w-0">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                  <Sparkles size={13} />
-                  Proposal Ledger
-                </div>
                 <h1 className="text-balance text-xl font-semibold leading-tight tracking-normal text-slate-950 max-[760px]:text-lg">
                   {selected?.displayName ?? "申报书预览"}
                 </h1>
@@ -262,15 +183,6 @@ function App() {
                 >
                   <Download size={15} />
                   当前
-                </button>
-                <button
-                  disabled={!checkedProjects.length || exporting}
-                  onClick={handleBatchExport}
-                  className="control-button compact primary"
-                  title="将勾选项目打包为 ZIP"
-                >
-                  <PackageCheck size={15} />
-                  批量 {checkedProjects.length || ""}
                 </button>
               </div>
             </div>
@@ -329,6 +241,7 @@ function Workspace({ project }: { project: ProposalProject }) {
         <section className="rounded-lg border border-white bg-slate-950 p-3 text-white shadow-sm">
           <h2 className="text-sm font-semibold tracking-normal">项目信息</h2>
           <Info label="归档" value={project.archive} />
+          <Info label="日期" value={project.fields["申报日期"] || "未记录"} />
           <Info label="状态" value={project.fields["申报状态"] || "待提交"} />
           <Info label="结果" value={project.fields["申报结果"] || "待补充"} />
           <Info label="总价" value={project.stats.totalAmount ? formatCurrency(project.stats.totalAmount) : "见正文"} />
@@ -405,15 +318,11 @@ function AccordionSection({
 function ProjectRow({
   project,
   active,
-  checked,
   onSelect,
-  onChecked,
 }: {
   project: ProposalProject;
   active: boolean;
-  checked: boolean;
   onSelect: () => void;
-  onChecked: () => void;
 }) {
   return (
     <button
@@ -424,13 +333,6 @@ function ProjectRow({
         active ? "border-emerald-300 bg-emerald-50 shadow-sm" : "border-transparent bg-white/62 hover:border-slate-200 hover:bg-white",
       )}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        onClick={(event) => event.stopPropagation()}
-        onChange={onChecked}
-        className="mt-0.5 size-3.5 accent-emerald-700"
-      />
       <div className="min-w-0 flex-1">
         <div className="line-clamp-2 text-[12px] font-semibold leading-4">{project.displayName}</div>
         <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-500">

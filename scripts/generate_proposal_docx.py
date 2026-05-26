@@ -180,6 +180,11 @@ def add_image(doc: Document, source: Path, line: str) -> None:
         add_para(doc, f"图片文件缺失：{target}", first_line=False, size=10.5)
 
 
+def is_source_meta(line: str) -> bool:
+    stripped = line.strip()
+    return stripped.startswith("申报日期") and "申报状态" in stripped
+
+
 def generate(source: Path, output_dir: Path) -> Path:
     app_dir = source.parent
     output = output_dir / app_dir.relative_to(APPLICATIONS_DIR) / f"{app_dir.name}-申报书.docx"
@@ -201,6 +206,9 @@ def generate(source: Path, output_dir: Path) -> Path:
         line = lines[index].rstrip()
         stripped = line.strip()
         if not stripped:
+            index += 1
+            continue
+        if is_source_meta(stripped):
             index += 1
             continue
         if stripped.startswith("## "):
