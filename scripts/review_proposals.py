@@ -53,6 +53,25 @@ DOCX_RULES = [
         re.compile(r"当前记录价|当前记录价格"),
         "正式申报书中尽量用预算单价、申报金额、合计等表述；价格来源细节放 README。",
     ),
+    Rule(
+        "DOCX-UNCONFIRMED-LAB-PROCESS",
+        "error",
+        re.compile(
+            r"到货后.*?(实验室|入库|记录|设备编号|使用记录|附件完整性)|"
+            r"按实验室.*?管理要求|"
+            r"后续可按导师要求|"
+            r"到货照片|"
+            r"团队长期使用|"
+            r"长期保留"
+        ),
+        "不要替实验室或导师想象未确认的管理流程、到货记录、入库方式或后续补充材料；只写已知采购对象、规格、预算和用途。",
+    ),
+    Rule(
+        "DOCX-OUTER-WORKING-CONTEXT",
+        "error",
+        re.compile(r"仓库|归档备份|CSV/XLS|(?<![A-Za-z])(?:csv|xls|xlsx)(?![A-Za-z])|README|assets|源文件|Git diff", re.IGNORECASE),
+        "申报书是给导师看的，不要出现仓库、CSV/XLS、README、assets、源文件等外围工程或归档字眼；完整明细应直接内置在申报书中。",
+    ),
 ]
 
 
@@ -91,12 +110,31 @@ def scan_text(path: Path, paragraphs: list[str], rules: list[Rule]) -> list[str]
     return findings
 
 
+def source_lines_for_review(source: Path) -> list[str]:
+    lines: list[str] = []
+    for line in source.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        image = re.fullmatch(r"!\[(.*?)\]\((.*?)\)", stripped)
+        lines.append(image.group(1) if image else stripped)
+    return lines
+
+
 def review() -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
 
     for docx in sorted(APPLICATIONS_DIR.glob("**/*-申报书.docx")):
         findings = scan_text(docx, docx_paragraphs(docx), DOCX_RULES)
+        for finding in findings:
+            if finding.startswith("[ERROR]"):
+                errors.append(finding)
+            else:
+                warnings.append(finding)
+
+    for source in sorted(APPLICATIONS_DIR.glob("**/申报书.md")):
+        findings = scan_text(source, source_lines_for_review(source), DOCX_RULES)
         for finding in findings:
             if finding.startswith("[ERROR]"):
                 errors.append(finding)

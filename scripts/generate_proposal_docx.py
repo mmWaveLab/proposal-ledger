@@ -29,6 +29,7 @@ REQUIRED_HEADINGS = [
     "四、取得效果或结果",
     "五、其他",
 ]
+DELIVERY_NOTE_HEADERS = {"备注"}
 
 
 def set_font(run, size: float = 12, bold: bool = False, east: str = "宋体") -> None:
@@ -119,6 +120,7 @@ def shade_cell(cell, fill: str) -> None:
 
 
 def add_table(doc: Document, rows: list[list[str]]) -> None:
+    rows = clean_delivery_table(rows)
     if not rows:
         return
     width = max(len(row) for row in rows)
@@ -152,6 +154,19 @@ def parse_table(lines: list[str], start: int) -> tuple[list[list[str]], int]:
             rows.append(cells)
         index += 1
     return rows, index
+
+
+def clean_delivery_table(rows: list[list[str]]) -> list[list[str]]:
+    if not rows:
+        return rows
+    header = rows[0]
+    drop_columns = {index for index, cell in enumerate(header) if cell.strip() in DELIVERY_NOTE_HEADERS}
+    if not drop_columns:
+        return rows
+    return [
+        [cell for index, cell in enumerate(row) if index not in drop_columns]
+        for row in rows
+    ]
 
 
 def add_image(doc: Document, source: Path, line: str) -> None:

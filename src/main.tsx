@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { CheckCircle2, ChevronDown, Download, RefreshCcw, Search } from "lucide-react";
+import JSZip from "jszip";
+import { AlertTriangle, CheckCircle2, ChevronDown, Download, ListTree, RefreshCcw, Search, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { ProposalData, ProposalProject } from "./types/proposal";
 import { EmojiIcon, type EmojiIconName } from "./lib/emojiIcons";
-import { docxFilename, exportProjectDocx } from "./lib/docxExport";
-import { markdownToHtml } from "./lib/markdown";
+import { createProjectDocxBlob, docxFilename, downloadBlob, exportProjectDocx } from "./lib/docxExport";
+import { extractOutline, markdownToHtml, type OutlineItem } from "./lib/markdown";
+import { scanProjectPrivacy, type PrivacyFinding } from "./lib/privacyScan";
 import "./styles.css";
 
 type QuarterGroup = {
@@ -28,6 +30,7 @@ function App() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState("正在读取申报项目...");
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     fetch("./proposal-data.json")
@@ -57,10 +60,22 @@ function App() {
 
   const groupedProjects = useMemo(() => groupProjects(filteredProjects), [filteredProjects]);
   const selected = projects.find((project) => project.id === selectedId) ?? filteredProjects[0] ?? projects[0];
+  const checkedProjects = useMemo(
+    () => projects.filter((project) => checkedIds.has(project.id)),
+    [checkedIds, projects],
+  );
   const totalAmount = useMemo(
     () => projects.reduce((sum, project) => sum + project.stats.totalAmount, 0),
     [projects],
   );
+
+  useEffect(() => {
+    setCheckedIds((current) => {
+      const validIds = new Set(projects.map((project) => project.id));
+      const next = new Set(Array.from(current).filter((id) => validIds.has(id)));
+      return next.size === current.size ? current : next;
+    });
+  }, [projects]);
 
   function toggleOpen(key: string) {
     setOpenGroups((current) => {
@@ -84,12 +99,61 @@ function App() {
     }
   }
 
+  function toggleProjectChecked(project: ProposalProject) {
+    setCheckedIds((current) => {
+      const next = new Set(current);
+      if (next.has(project.id)) next.delete(project.id);
+      else next.add(project.id);
+      return next;
+    });
+  }
+
+  function setProjectGroupChecked(groupProjects: ProposalProject[], checked: boolean) {
+    setCheckedIds((current) => {
+      const next = new Set(current);
+      for (const project of groupProjects) {
+        if (checked) next.add(project.id);
+        else next.delete(project.id);
+      }
+      return next;
+    });
+  }
+
+  function groupCheckState(groupProjects: ProposalProject[]) {
+    const checked = groupProjects.filter((project) => checkedIds.has(project.id)).length;
+    return {
+      checked,
+      allChecked: checked > 0 && checked === groupProjects.length,
+      label: checked ? `${checked}/${groupProjects.length}` : "全选",
+    };
+  }
+
+  async function handleBatchExport() {
+    if (!checkedProjects.length) return;
+    setExporting(true);
+    setStatus(`正在打包 ${checkedProjects.length} 份 Word 文档...`);
+    try {
+      const zip = new JSZip();
+      for (const project of checkedProjects) {
+        const blob = await createProjectDocxBlob(project);
+        zip.file(`${project.archive}/${docxFilename(project)}`, blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      downloadBlob(zipBlob, `proposal-docx-${new Date().toISOString().slice(0, 10)}-${checkedProjects.length}份.zip`);
+      setStatus(`已打包导出 ${checkedProjects.length} 份 DOCX`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "批量导出失败");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#edf2f4] text-slate-950">
-      <div className="grid min-h-screen grid-cols-[268px_minmax(0,1fr)] max-[980px]:grid-cols-1">
-        <aside className="relative border-r border-white/80 bg-white/78 p-3 shadow-[12px_0_44px_rgba(20,36,50,0.07)] backdrop-blur-2xl max-[980px]:border-r-0 max-[980px]:border-b">
+    <div className="h-screen overflow-hidden bg-[#edf2f4] text-slate-950 max-[980px]:h-auto max-[980px]:overflow-visible">
+      <div className="grid h-screen min-h-0 grid-cols-[268px_minmax(0,1fr)] max-[980px]:h-auto max-[980px]:grid-cols-1">
+        <aside className="relative flex h-screen min-h-0 flex-col overflow-hidden border-r border-white/80 bg-white/78 p-3 shadow-[12px_0_44px_rgba(20,36,50,0.07)] backdrop-blur-2xl max-[980px]:h-auto max-[980px]:border-r-0 max-[980px]:border-b">
           <div className="absolute inset-x-3 top-3 h-24 rounded-lg bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(59,130,246,0.12),rgba(244,114,182,0.12))]" />
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className="flex items-center gap-2 rounded-lg border border-white/85 bg-white/78 p-3 shadow-sm">
               <div className="grid size-9 place-items-center rounded-md bg-slate-950 text-white">
                 <EmojiIcon name="app" label="工作台" />
@@ -121,11 +185,11 @@ function App() {
             </label>
 
             <div className="mt-3 rounded-md border border-emerald-100 bg-emerald-50/90 px-2.5 py-2 text-xs text-emerald-900">
-              选择项目后点击“当前”导出单份 DOCX。
+              勾选可批量打包，点击项目名预览单份 DOCX。
             </div>
           </div>
 
-          <div className="mt-3 max-h-[calc(100vh-218px)] overflow-auto pr-0.5 max-[980px]:max-h-80">
+          <div className="mt-3 min-h-0 flex-1 overflow-auto pr-0.5 max-[980px]:max-h-80">
             {groupedProjects.map((year) => (
               <AccordionSection
                 key={year.key}
@@ -134,6 +198,12 @@ function App() {
                 open={openGroups.has(year.key)}
                 onToggle={() => toggleOpen(year.key)}
                 depth="year"
+                action={
+                  <GroupCheckAction
+                    state={groupCheckState(year.quarters.flatMap((quarter) => quarter.projects))}
+                    onToggle={(checked) => setProjectGroupChecked(year.quarters.flatMap((quarter) => quarter.projects), checked)}
+                  />
+                }
               >
                 {year.quarters.map((quarter) => (
                     <AccordionSection
@@ -143,6 +213,12 @@ function App() {
                       open={openGroups.has(quarter.key)}
                       onToggle={() => toggleOpen(quarter.key)}
                       depth="quarter"
+                      action={
+                        <GroupCheckAction
+                          state={groupCheckState(quarter.projects)}
+                          onToggle={(checked) => setProjectGroupChecked(quarter.projects, checked)}
+                        />
+                      }
                     >
                       <div className="space-y-1.5 pb-2 pl-2">
                         {quarter.projects.map((project) => (
@@ -150,7 +226,9 @@ function App() {
                             key={project.id}
                             project={project}
                             active={selected?.id === project.id}
+                            checked={checkedIds.has(project.id)}
                             onSelect={() => setSelectedId(project.id)}
+                            onToggleCheck={() => toggleProjectChecked(project)}
                           />
                         ))}
                       </div>
@@ -161,8 +239,8 @@ function App() {
           </div>
         </aside>
 
-        <main className="min-w-0">
-          <header className="px-4 pb-1 pt-4 max-[760px]:px-3">
+        <main className="flex h-screen min-w-0 flex-col overflow-hidden max-[980px]:h-auto max-[980px]:overflow-visible">
+          <header className="shrink-0 px-4 pb-1 pt-4 max-[760px]:px-3">
             <div className="mx-auto flex max-w-[1312px] items-center justify-between gap-3 rounded-lg border border-white/80 bg-white/72 px-4 py-3 shadow-sm backdrop-blur-xl max-[760px]:items-start max-[760px]:flex-col">
               <div className="min-w-0">
                 <h1 className="text-balance text-xl font-semibold leading-tight tracking-normal text-slate-950 max-[760px]:text-lg">
@@ -184,6 +262,15 @@ function App() {
                   <Download size={15} />
                   当前
                 </button>
+                <button
+                  disabled={!checkedProjects.length || exporting}
+                  onClick={handleBatchExport}
+                  className="control-button compact primary"
+                  title="将勾选项目打包为 ZIP"
+                >
+                  <Download size={15} />
+                  打包 {checkedProjects.length || ""}
+                </button>
               </div>
             </div>
             <div className="mx-auto mt-2 max-w-[1312px] rounded-md border border-slate-200 bg-white/72 px-3 py-1.5 text-xs text-slate-600 shadow-sm">
@@ -191,7 +278,11 @@ function App() {
             </div>
           </header>
 
-          {selected ? <Workspace project={selected} /> : <div className="p-8 text-slate-500">没有找到项目。</div>}
+          {selected ? (
+            <Workspace project={selected} />
+          ) : (
+            <div className="min-h-0 flex-1 overflow-auto p-8 text-slate-500">没有找到项目。</div>
+          )}
         </main>
       </div>
     </div>
@@ -199,7 +290,11 @@ function App() {
 }
 
 function Workspace({ project }: { project: ProposalProject }) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const html = useMemo(() => markdownToHtml(project.markdown), [project.markdown]);
+  const outline = useMemo(() => extractOutline(project.markdown), [project.markdown]);
+  const [activeHeading, setActiveHeading] = useState(outline[0]?.id ?? "");
+  const privacy = useMemo(() => scanProjectPrivacy(project), [project]);
   const checks: Array<{ icon: EmojiIconName; label: string; value: string }> = [
     { icon: "text", label: "字符", value: project.stats.characters.toLocaleString("zh-CN") },
     { icon: "project", label: "段落", value: project.stats.paragraphs.toString() },
@@ -207,22 +302,77 @@ function Workspace({ project }: { project: ProposalProject }) {
     { icon: "image", label: "图片", value: project.stats.images.toString() },
   ];
 
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-3 p-4 max-[1180px]:grid-cols-1 max-[760px]:p-3">
-      <AnimatePresence mode="wait">
-        <motion.article
-          key={project.id}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto w-full max-w-[1080px] rounded-lg border border-white bg-white px-10 py-9 shadow-[0_22px_70px_rgba(16,32,42,0.13)] max-[760px]:px-5 max-[760px]:py-6"
-        >
-          <div className="proposal-preview" dangerouslySetInnerHTML={{ __html: html }} />
-        </motion.article>
-      </AnimatePresence>
+  useEffect(() => {
+    setActiveHeading(outline[0]?.id ?? "");
+  }, [outline]);
 
-      <aside className="space-y-3">
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !outline.length) return;
+
+    const updateActiveHeading = () => {
+      const headings = outline
+        .map((item) => document.getElementById(item.id))
+        .filter((element): element is HTMLElement => Boolean(element));
+      const containerTop = container.getBoundingClientRect().top;
+      const current =
+        headings
+          .map((heading) => ({
+            id: heading.id,
+            offset: heading.getBoundingClientRect().top - containerTop,
+          }))
+          .filter((heading) => heading.offset <= 96)
+          .at(-1) ?? headings[0];
+      if (current) setActiveHeading(current.id);
+    };
+
+    updateActiveHeading();
+    container.addEventListener("scroll", updateActiveHeading, { passive: true });
+    return () => container.removeEventListener("scroll", updateActiveHeading);
+  }, [outline, project.id]);
+
+  function jumpToHeading(id: string) {
+    const heading = document.getElementById(id);
+    if (!heading) return;
+    heading.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveHeading(id);
+  }
+
+  return (
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_238px] gap-3 overflow-hidden p-4 max-[1180px]:grid-cols-1 max-[1180px]:overflow-visible max-[760px]:p-3">
+      <div ref={scrollRef} className="min-h-0 overflow-auto pr-1 max-[1180px]:overflow-visible max-[1180px]:pr-0">
+        <AnimatePresence mode="wait">
+          <motion.article
+            key={project.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mx-auto w-full max-w-[1120px] rounded-lg border border-white bg-white px-11 py-9 shadow-[0_22px_70px_rgba(16,32,42,0.13)] max-[760px]:px-5 max-[760px]:py-6"
+          >
+            <div className="proposal-preview" dangerouslySetInnerHTML={{ __html: html }} />
+          </motion.article>
+        </AnimatePresence>
+      </div>
+
+      <aside className="min-h-0 space-y-3 overflow-auto pr-0.5 max-[1180px]:overflow-visible max-[1180px]:pr-0">
+        <section className="rounded-lg border border-white bg-white/82 p-3 shadow-sm backdrop-blur">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold tracking-normal">
+            <ListTree size={15} className="text-emerald-700" />
+            正文大纲
+          </h2>
+          <div className="space-y-1">
+            {outline.map((item) => (
+              <OutlineButton
+                key={item.id}
+                item={item}
+                active={activeHeading === item.id}
+                onClick={() => jumpToHeading(item.id)}
+              />
+            ))}
+          </div>
+        </section>
+
         <section className="rounded-lg border border-white bg-white/78 p-3 shadow-sm backdrop-blur">
           <h2 className="mb-2 text-sm font-semibold tracking-normal">交付检查</h2>
           <div className="grid grid-cols-2 gap-1.5">
@@ -237,6 +387,8 @@ function Workspace({ project }: { project: ProposalProject }) {
             ))}
           </div>
         </section>
+
+        <PrivacyPanel result={privacy} />
 
         <section className="rounded-lg border border-white bg-slate-950 p-3 text-white shadow-sm">
           <h2 className="text-sm font-semibold tracking-normal">项目信息</h2>
@@ -255,6 +407,132 @@ function Workspace({ project }: { project: ProposalProject }) {
           <p className="text-xs leading-5 text-slate-600">Markdown 和图片会写入静态 JSON，部署后仍可预览与导出。</p>
         </section>
       </aside>
+    </div>
+  );
+}
+
+function OutlineButton({
+  item,
+  active,
+  onClick,
+}: {
+  item: OutlineItem;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "group flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-[11px] leading-4 transition",
+        item.depth === 1 && "font-semibold",
+        item.depth === 2 && "pl-4",
+        item.depth >= 3 && "pl-6 text-slate-500",
+        active ? "bg-emerald-50 text-emerald-900 shadow-sm" : "text-slate-600 hover:bg-white hover:text-slate-950",
+      )}
+    >
+      <span
+        className={clsx(
+          "mt-1 size-1.5 shrink-0 rounded-full transition",
+          active ? "bg-emerald-600" : "bg-slate-300 group-hover:bg-slate-500",
+        )}
+      />
+      <span className="line-clamp-2">{item.text}</span>
+    </button>
+  );
+}
+
+function PrivacyPanel({ result }: { result: ReturnType<typeof scanProjectPrivacy> }) {
+  const hasHighRisk = result.highCount > 0;
+  const hasWarning = result.mediumCount > 0;
+  const status = hasHighRisk ? "发现高风险" : hasWarning ? "建议复核" : "未见明显泄漏";
+  const description = hasHighRisk
+    ? "导出或公开前先处理红色项。"
+    : hasWarning
+      ? "没有敏感硬伤，但有交付措辞需要看一眼。"
+      : "DOCX 正文与公开数据通过基础检查。";
+
+  return (
+    <section
+      className={clsx(
+        "rounded-lg border p-3 shadow-sm backdrop-blur",
+        hasHighRisk
+          ? "border-rose-200 bg-rose-50/92"
+          : hasWarning
+            ? "border-amber-200 bg-amber-50/92"
+            : "border-emerald-100 bg-emerald-50/90",
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold tracking-normal">
+            {hasHighRisk ? (
+              <ShieldAlert size={15} className="text-rose-600" />
+            ) : (
+              <ShieldCheck size={15} className={hasWarning ? "text-amber-600" : "text-emerald-600"} />
+            )}
+            隐私泄漏检查
+          </h2>
+          <p className="mt-1 text-[11px] leading-4 text-slate-600">{description}</p>
+        </div>
+        <span
+          className={clsx(
+            "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
+            hasHighRisk
+              ? "bg-rose-100 text-rose-700"
+              : hasWarning
+                ? "bg-amber-100 text-amber-800"
+                : "bg-emerald-100 text-emerald-700",
+          )}
+        >
+          {status}
+        </span>
+      </div>
+
+      {result.findings.length > 0 ? (
+        <div className="mt-2 space-y-1.5">
+          {result.findings.map((finding) => (
+            <PrivacyFindingRow key={finding.id} finding={finding} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-2 space-y-1">
+          {result.passed.slice(0, 3).map((item) => (
+            <div key={item} className="flex gap-1.5 text-[11px] leading-4 text-emerald-800">
+              <CheckCircle2 size={13} className="mt-0.5 shrink-0" />
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PrivacyFindingRow({ finding }: { finding: PrivacyFinding }) {
+  const high = finding.severity === "high";
+  return (
+    <div className={clsx("rounded-md border bg-white/78 px-2.5 py-2", high ? "border-rose-200" : "border-amber-200")}>
+      <div className="flex items-center justify-between gap-2">
+        <div className={clsx("flex items-center gap-1.5 text-[12px] font-semibold", high ? "text-rose-800" : "text-amber-900")}>
+          <AlertTriangle size={13} />
+          {finding.label}
+        </div>
+        <span className={clsx("rounded-full px-1.5 py-0.5 text-[10px] font-semibold", high ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-800")}>
+          {finding.count}
+        </span>
+      </div>
+      <p className="mt-1 text-[11px] leading-4 text-slate-600">{finding.description}</p>
+      {finding.examples.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {finding.examples.map((example) => (
+            <code key={example} className="max-w-full truncate rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-600">
+              {example}
+            </code>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -315,32 +593,80 @@ function AccordionSection({
   );
 }
 
+function GroupCheckAction({
+  state,
+  onToggle,
+}: {
+  state: { checked: number; allChecked: boolean; label: string };
+  onToggle: (checked: boolean) => void;
+}) {
+  return (
+    <span
+      role="checkbox"
+      aria-checked={state.allChecked}
+      tabIndex={0}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle(!state.allChecked);
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        event.stopPropagation();
+        onToggle(!state.allChecked);
+      }}
+      className={clsx(
+        "shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold transition",
+        state.checked
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-slate-200 bg-white/80 text-slate-500 hover:border-slate-300",
+      )}
+    >
+      {state.label}
+    </span>
+  );
+}
+
 function ProjectRow({
   project,
   active,
+  checked,
   onSelect,
+  onToggleCheck,
 }: {
   project: ProposalProject;
   active: boolean;
+  checked: boolean;
   onSelect: () => void;
+  onToggleCheck: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       className={clsx(
         "group flex w-full items-start gap-2 rounded-md border px-2 py-2 text-left transition",
         active ? "border-emerald-300 bg-emerald-50 shadow-sm" : "border-transparent bg-white/62 hover:border-slate-200 hover:bg-white",
       )}
     >
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        onClick={onToggleCheck}
+        className={clsx(
+          "mt-0.5 grid size-4 shrink-0 place-items-center rounded border transition",
+          checked ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white text-transparent",
+        )}
+        aria-label={checked ? `取消勾选 ${project.displayName}` : `勾选 ${project.displayName}`}
+        title={checked ? "取消勾选" : "勾选导出"}
+      >
+        <CheckCircle2 size={12} />
+      </button>
+      <button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left">
         <div className="line-clamp-2 text-[12px] font-semibold leading-4">{project.displayName}</div>
         <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-500">
           <span className="truncate">{formatCurrency(project.stats.totalAmount) || "见正文"}</span>
           {active && <CheckCircle2 size={13} className="shrink-0 text-emerald-600" />}
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
 

@@ -16,12 +16,12 @@
 - 选定规格: Tang Primer 25K 核心板 + 25K Dock 底板套件
 - 主要用途: 用于雷达 LVDS 原始数据采集链路验证，并服务自制 USB3.0 雷达采集卡完成与联调。
 - 淘宝搜索关键词: `Tang Primer 25K`
-- 淘宝记录: 2026-05-21 淘宝桌面版短搜 `Tang Primer 25K`，当前记录价 `¥49.00`，后续以下单页复核为准。
+- 价格记录: 2026-05-21 商品页面检索 `Tang Primer 25K`，当前记录价 `¥49.00`，后续以下单页复核为准。
 - 官方文档页: https://wiki.sipeed.com/hardware/zh/tang/tang-primer-25k/primer-25k.html
 - 官方硬件资料页: https://dl.sipeed.com/shareURL/TANG/Primer_25K
 - TI DCA1000EVM 对比资料: https://www.ti.com/tool/DCA1000EVM
 - 参考对比: TI DCA1000EVM 官方资料显示其可采集雷达 LVDS 数据，但实时输出路径为 1Gbps Ethernet；本项目面向自制 USB3.0 单线高速雷达采集卡。
-- 资料来源: 淘宝桌面版搜索截图；Sipeed 官方 Wiki、硬件资料页和 TI DCA1000EVM 官方资料。
+- 资料来源: 商品页面价格记录；Sipeed 官方 Wiki、硬件资料页和 TI DCA1000EVM 官方资料。
 
 ### 图片
 
@@ -59,10 +59,10 @@
 
 ## 价格情况
 
-| 项目 | 数量 | 单价(CNY) | 小计(CNY) | 备注 |
-| --- | ---: | ---: | ---: | --- |
-| Tang Primer 25K FPGA 开发套件 | 1 | 49.00 | 49.00 | 当前记录价，核心板 + 25K Dock 套件；后续以下单页复核 |
-| 合计 |  |  | 49.00 | 实际以审批后订单及发票为准 |
+| 项目 | 数量 | 单价(CNY) | 小计(CNY) |
+| --- | ---: | ---: | ---: |
+| Tang Primer 25K FPGA 开发套件 | 1 | 49.00 | 49.00 |
+| 合计 |  |  | 49.00 |
 
 ## 采购理由
 

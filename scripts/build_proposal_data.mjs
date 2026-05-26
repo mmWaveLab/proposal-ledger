@@ -6,6 +6,8 @@ const applicationsDir = path.join(root, "applications");
 const publicDir = path.join(root, "public");
 const outputPath = path.join(publicDir, "proposal-data.json");
 const sourceName = "申报书.md";
+const deliveryNoteHeaders = new Set(["备注"]);
+const tableDivider = /^:?-{3,}:?$/;
 
 const imageTypes = new Map([
   [".jpg", "image/jpeg"],
@@ -53,6 +55,62 @@ function extractSourceMeta(markdown) {
     return false;
   });
   return { markdown: cleaned.join("\n"), meta };
+}
+
+function cleanDeliveryMarkdownTables(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const cleaned = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    if (!lines[index].trim().startsWith("|")) {
+      cleaned.push(lines[index]);
+      index += 1;
+      continue;
+    }
+
+    const tableLines = [];
+    while (index < lines.length && lines[index].trim().startsWith("|")) {
+      tableLines.push(lines[index]);
+      index += 1;
+    }
+    cleaned.push(...cleanMarkdownTable(tableLines));
+  }
+
+  return cleaned.join("\n");
+}
+
+function cleanMarkdownTable(tableLines) {
+  const rows = tableLines.map((line) => {
+    const cells = splitTableRow(line);
+    return {
+      cells,
+      divider: cells.every((cell) => tableDivider.test(cell.replace(/\s/g, ""))),
+    };
+  });
+  const header = rows.find((row) => !row.divider);
+  if (!header) return tableLines;
+
+  const dropColumns = new Set();
+  header.cells.forEach((cell, index) => {
+    if (deliveryNoteHeaders.has(cell.trim())) dropColumns.add(index);
+  });
+  if (!dropColumns.size) return tableLines;
+
+  return rows.map((row) => {
+    const cells = row.cells.filter((_, index) => !dropColumns.has(index));
+    const normalized = row.divider ? cells.map(() => "---") : cells;
+    return `| ${normalized.join(" | ")} |`;
+  });
+}
+
+function splitTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
 }
 
 function tableCount(markdown) {
@@ -138,6 +196,7 @@ async function main() {
     const sourceRel = path.relative(root, source).split(path.sep).join("/");
     const rawMarkdown = await readFile(source, "utf8");
     const sourceMeta = extractSourceMeta(rawMarkdown);
+    const deliveryMarkdown = cleanDeliveryMarkdownTables(sourceMeta.markdown);
     const readmePath = path.join(dir, "README.md");
     let readme = {};
     let readmeText = "";
@@ -148,8 +207,8 @@ async function main() {
       readme = {};
     }
     const totalAmount = extractTotalAmount(readmeText);
-    const embedded = await embedImages(sourceMeta.markdown, dir);
-    const lines = sourceMeta.markdown.split(/\r?\n/);
+    const embedded = await embedImages(deliveryMarkdown, dir);
+    const lines = deliveryMarkdown.split(/\r?\n/);
     const paragraphCount = lines.filter((line) => {
       const trimmed = line.trim();
       return trimmed && !trimmed.startsWith("#") && !trimmed.startsWith("|") && !trimmed.startsWith("!");
@@ -158,19 +217,18 @@ async function main() {
     projects.push({
       id: relDir,
       name: path.basename(dir),
-      title: extractTitle(sourceMeta.markdown, path.basename(dir)),
+      title: extractTitle(deliveryMarkdown, path.basename(dir)),
       displayName: readme["项目名称"] || extractTitle(sourceMeta.markdown, path.basename(dir)),
       archive: relDir.split("/").slice(0, 2).join("/"),
       sourceRel,
       markdown: embedded.markdown,
-      rawMarkdown,
       images: embedded.images,
       fields: { ...sourceMeta.meta, ...readme },
       stats: {
         paragraphs: paragraphCount,
-        tables: tableCount(rawMarkdown),
+        tables: tableCount(deliveryMarkdown),
         images: embedded.images.length,
-        characters: sourceMeta.markdown.replace(/\s/g, "").length,
+        characters: deliveryMarkdown.replace(/\s/g, "").length,
         totalAmount,
       },
     });

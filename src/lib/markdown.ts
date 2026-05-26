@@ -1,5 +1,11 @@
 import { marked } from "marked";
 
+export type OutlineItem = {
+  id: string;
+  text: string;
+  depth: number;
+};
+
 export type MarkdownBlock =
   | { type: "title"; text: string }
   | { type: "heading"; text: string }
@@ -9,13 +15,37 @@ export type MarkdownBlock =
   | { type: "image"; caption: string; src: string };
 
 const tableDivider = /^:?-{3,}:?$/;
+const outlineHeadingPattern = /^(?:[一二三四五六七八九十]+、|#)/;
 
 export function markdownToHtml(markdown: string) {
-  return marked.parse(markdown, {
+  const slugs = new Map<string, number>();
+  const html = marked.parse(markdown, {
     async: false,
     breaks: false,
     gfm: true,
   }) as string;
+  return html.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_match, depth: string, content: string) => {
+    const text = stripHtml(content);
+    const id = uniqueSlug(text, slugs);
+    return `<h${depth} id="${escapeAttribute(id)}">${content}</h${depth}>`;
+  });
+}
+
+export function extractOutline(markdown: string): OutlineItem[] {
+  const slugs = new Map<string, number>();
+  return marked
+    .lexer(markdown)
+    .filter((token) => token.type === "heading" && token.depth <= 3)
+    .map((token) => {
+      const heading = token as { text: string; depth: number };
+      const text = stripInline(heading.text);
+      return {
+        id: uniqueSlug(text, slugs),
+        text,
+        depth: heading.depth,
+      };
+    })
+    .filter((item) => item.depth === 1 || outlineHeadingPattern.test(item.text));
 }
 
 export function parseProposalMarkdown(markdown: string): MarkdownBlock[] {
@@ -79,4 +109,24 @@ function stripInline(value: string) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/`([^`]+)`/g, "$1");
+}
+
+function uniqueSlug(text: string, slugs: Map<string, number>) {
+  const base =
+    text
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "") || "section";
+  const count = slugs.get(base) ?? 0;
+  slugs.set(base, count + 1);
+  return count ? `${base}-${count + 1}` : base;
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, "").trim();
+}
+
+function escapeAttribute(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

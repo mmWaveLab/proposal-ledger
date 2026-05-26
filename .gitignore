@@ -39,6 +39,10 @@ venv/
 *.swp
 *.swo
 
+# Local one-off document rewrite scripts
+scripts/plain_language_application.py
+scripts/revise_application.py
+
 # Large raw experiment data should live outside this proposal ledger.
 # Keep curated screenshots and proof images under applications/*/assets/.
 data/

@@ -13,7 +13,6 @@ export type ProposalProject = {
   archive: string;
   sourceRel: string;
   markdown: string;
-  rawMarkdown: string;
   images: ProposalImage[];
   fields: Record<string, string>;
   stats: {
