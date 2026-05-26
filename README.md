@@ -63,26 +63,28 @@ pnpm run build
 下面内容由 GitHub Actions 根据 `applications/**/README.md` 自动更新。
 
 <!-- stats:start -->
-- 申报总数: 5
-- 已确认价格总额: ¥5,321.21
-- 完整价格申报数: 5
+- 申报总数: 7
+- 已确认价格总额: ¥6,590.21
+- 完整价格申报数: 7
 - 部分确认金额申报数: 0
 - 待复核金额申报数: 0
-- 完整价格平均值: ¥1,064.24
+- 完整价格平均值: ¥941.46
 - 成功率: 0.0%
 
 | 状态 | 数量 |
 | --- | ---: |
-| 进行中/待补充 | 5 |
+| 进行中/待补充 | 7 |
 
 | 季度 | 申报数 | 金额 |
 | --- | ---: | ---: |
-| 2026/Q2 | 5 | ¥5,321.21 |
+| 2026/Q2 | 7 | ¥6,590.21 |
 
 | 申报 | 归档 | 状态 | 成功情况 | 价格状态 | 金额 | 源文件 |
 | --- | --- | --- | --- | --- | ---: | --- |
 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥2,969.00 | [md](applications/2026/Q2/树莓派SSD计算套件/申报书.md) |
 | [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥1,974.22 | [md](applications/2026/Q2/实验室电子元器件采集/申报书.md) |
+| [AMS lite多材料供料系统购买](applications/2026/Q2/AMSlite多材料供料系统/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥866.15 | [md](applications/2026/Q2/AMSlite多材料供料系统/申报书.md) |
+| [3D打印实验耗材购买](applications/2026/Q2/3D打印耗材购买/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥402.85 | [md](applications/2026/Q2/3D打印耗材购买/申报书.md) |
 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥167.00 | [md](applications/2026/Q2/BGA200内存返修工具/申报书.md) |
 | [瑞莎 Radxa Cubie A5E 迷你主板](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥161.99 | [md](applications/2026/Q2/瑞莎CubieA5E数据采集套件/申报书.md) |
 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | 2026/Q2 | 待提交 | 待补充 | 已确认 | ¥49.00 | [md](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/申报书.md) |
@@ -91,9 +93,9 @@ pnpm run build
 | ---: | --- | ---: |
 | 1 | [树莓派 SSD 采集计算套件采购](applications/2026/Q2/树莓派SSD计算套件/README.md) | ¥2,969.00 |
 | 2 | [实验室电子元器件采集](applications/2026/Q2/实验室电子元器件采集/README.md) | ¥1,974.22 |
-| 3 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | ¥167.00 |
-| 4 | [瑞莎 Radxa Cubie A5E 迷你主板](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | ¥161.99 |
-| 5 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | ¥49.00 |
+| 3 | [AMS lite多材料供料系统购买](applications/2026/Q2/AMSlite多材料供料系统/README.md) | ¥866.15 |
+| 4 | [3D打印实验耗材购买](applications/2026/Q2/3D打印耗材购买/README.md) | ¥402.85 |
+| 5 | [BGA200内存颗粒返修工具采购](applications/2026/Q2/BGA200内存返修工具/README.md) | ¥167.00 |
 
 _统计脚本: `scripts/update_stats.py`; 最近统计日期: 2026-05-26_
 <!-- stats:end -->
