@@ -10,7 +10,8 @@
     "dev": "pnpm run data && vite --host 127.0.0.1",
     "build": "pnpm run data && tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "pnpm run build"
+    "test": "pnpm run data && node scripts/test_workbench.mjs && python3 scripts/validate_ledger.py && python3 scripts/review_proposals.py",
+    "check": "pnpm run test && pnpm run build"
   },
   "repository": {
     "type": "git",
