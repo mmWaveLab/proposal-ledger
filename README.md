@@ -93,5 +93,5 @@ Vercel 部署已提供 `vercel.json`，建议项目名和默认域名使用 `pro
 | 4 | [瑞莎 Radxa Cubie A5E 迷你主板](applications/2026/Q2/瑞莎CubieA5E数据采集套件/README.md) | ¥161.99 |
 | 5 | [Tang Primer 25K 雷达 LVDS 采集 FPGA 套件采购](applications/2026/Q2/TangPrimer25K雷达LVDS采集FPGA/README.md) | ¥49.00 |
 
-_统计脚本: `scripts/update_stats.py`; 最近统计日期: 2026-05-25_
+_统计脚本: `scripts/update_stats.py`; 最近统计日期: 2026-05-26_
 <!-- stats:end -->
