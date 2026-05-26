@@ -11,6 +11,17 @@ body {
     "Microsoft YaHei", sans-serif;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.proposal-scroll {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 button,
 input {
   font: inherit;

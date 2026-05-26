@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import JSZip from "jszip";
 import { AlertTriangle, CheckCircle2, ChevronDown, Download, ListTree, RefreshCcw, Search, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { ProposalData, ProposalProject } from "./types/proposal";
 import { EmojiIcon, type EmojiIconName } from "./lib/emojiIcons";
-import { createProjectDocxBlob, docxFilename, downloadBlob, exportProjectDocx } from "./lib/docxExport";
+import { docxFilename, exportProjectDocx } from "./lib/docxExport";
 import { extractOutline, markdownToHtml, type OutlineItem } from "./lib/markdown";
 import { scanProjectPrivacy, type PrivacyFinding } from "./lib/privacyScan";
 import "./styles.css";
@@ -131,16 +130,14 @@ function App() {
   async function handleBatchExport() {
     if (!checkedProjects.length) return;
     setExporting(true);
-    setStatus(`正在打包 ${checkedProjects.length} 份 Word 文档...`);
+    setStatus(`正在下载 ${checkedProjects.length} 份 Word 文档...`);
     try {
-      const zip = new JSZip();
-      for (const project of checkedProjects) {
-        const blob = await createProjectDocxBlob(project);
-        zip.file(`${project.archive}/${docxFilename(project)}`, blob);
+      for (const [index, project] of checkedProjects.entries()) {
+        setStatus(`正在下载第 ${index + 1}/${checkedProjects.length} 份：${docxFilename(project)}`);
+        await exportProjectDocx(project);
+        await sleep(180);
       }
-      const zipBlob = await zip.generateAsync({ type: "blob" });
-      downloadBlob(zipBlob, `proposal-docx-${new Date().toISOString().slice(0, 10)}-${checkedProjects.length}份.zip`);
-      setStatus(`已打包导出 ${checkedProjects.length} 份 DOCX`);
+      setStatus(`已触发下载 ${checkedProjects.length} 份 DOCX`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "批量导出失败");
     } finally {
@@ -149,9 +146,9 @@ function App() {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-[#edf2f4] text-slate-950 max-[980px]:h-auto max-[980px]:overflow-visible">
-      <div className="grid h-screen min-h-0 grid-cols-[268px_minmax(0,1fr)] max-[980px]:h-auto max-[980px]:grid-cols-1">
-        <aside className="relative flex h-screen min-h-0 flex-col overflow-hidden border-r border-white/80 bg-white/78 p-3 shadow-[12px_0_44px_rgba(20,36,50,0.07)] backdrop-blur-2xl max-[980px]:h-auto max-[980px]:border-r-0 max-[980px]:border-b">
+    <div className="h-dvh overflow-hidden bg-[#edf2f4] text-slate-950 max-[980px]:h-auto max-[980px]:overflow-visible">
+      <div className="grid h-dvh min-h-0 grid-cols-[268px_minmax(0,1fr)] max-[980px]:h-auto max-[980px]:grid-cols-1">
+        <aside className="relative flex h-dvh min-h-0 flex-col overflow-hidden border-r border-white/80 bg-white/78 p-3 shadow-[12px_0_44px_rgba(20,36,50,0.07)] backdrop-blur-2xl max-[980px]:h-auto max-[980px]:border-r-0 max-[980px]:border-b">
           <div className="absolute inset-x-3 top-3 h-24 rounded-lg bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(59,130,246,0.12),rgba(244,114,182,0.12))]" />
           <div className="relative shrink-0">
             <div className="flex items-center gap-2 rounded-lg border border-white/85 bg-white/78 p-3 shadow-sm">
@@ -160,7 +157,7 @@ function App() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold tracking-normal">DOCX 工作台</div>
-                <div className="text-[11px] text-slate-500">静态预览 · 单份导出</div>
+                <div className="text-[11px] text-slate-500">静态预览 · 批量下载</div>
               </div>
             </div>
 
@@ -185,7 +182,7 @@ function App() {
             </label>
 
             <div className="mt-3 rounded-md border border-emerald-100 bg-emerald-50/90 px-2.5 py-2 text-xs text-emerald-900">
-              勾选可批量打包，点击项目名预览单份 DOCX。
+              勾选后可批量下载单份 DOCX，点击项目名预览。
             </div>
           </div>
 
@@ -239,7 +236,7 @@ function App() {
           </div>
         </aside>
 
-        <main className="flex h-screen min-w-0 flex-col overflow-hidden max-[980px]:h-auto max-[980px]:overflow-visible">
+        <main className="flex h-dvh min-w-0 flex-col overflow-hidden max-[980px]:h-auto max-[980px]:overflow-visible">
           <header className="shrink-0 px-4 pb-1 pt-4 max-[760px]:px-3">
             <div className="mx-auto flex max-w-[1312px] items-center justify-between gap-3 rounded-lg border border-white/80 bg-white/72 px-4 py-3 shadow-sm backdrop-blur-xl max-[760px]:items-start max-[760px]:flex-col">
               <div className="min-w-0">
@@ -266,10 +263,10 @@ function App() {
                   disabled={!checkedProjects.length || exporting}
                   onClick={handleBatchExport}
                   className="control-button compact primary"
-                  title="将勾选项目打包为 ZIP"
+                  title="逐个下载勾选项目的 DOCX"
                 >
                   <Download size={15} />
-                  打包 {checkedProjects.length || ""}
+                  批量 {checkedProjects.length || ""}
                 </button>
               </div>
             </div>
@@ -339,8 +336,8 @@ function Workspace({ project }: { project: ProposalProject }) {
   }
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_238px] gap-3 overflow-hidden p-4 max-[1180px]:grid-cols-1 max-[1180px]:overflow-visible max-[760px]:p-3">
-      <div ref={scrollRef} className="min-h-0 overflow-auto pr-1 max-[1180px]:overflow-visible max-[1180px]:pr-0">
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_260px] gap-3 overflow-hidden p-4 max-[980px]:grid-cols-1 max-[980px]:overflow-visible max-[760px]:p-3">
+      <div ref={scrollRef} className="proposal-scroll min-h-0 overflow-y-auto overflow-x-hidden pr-1 max-[980px]:overflow-visible max-[980px]:pr-0">
         <AnimatePresence mode="wait">
           <motion.article
             key={project.id}
@@ -355,7 +352,7 @@ function Workspace({ project }: { project: ProposalProject }) {
         </AnimatePresence>
       </div>
 
-      <aside className="min-h-0 space-y-3 overflow-auto pr-0.5 max-[1180px]:overflow-visible max-[1180px]:pr-0">
+      <aside className="proposal-scroll min-h-0 space-y-3 overflow-y-auto overflow-x-hidden pr-0.5 max-[980px]:overflow-visible max-[980px]:pr-0">
         <section className="rounded-lg border border-white bg-white/82 p-3 shadow-sm backdrop-blur">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold tracking-normal">
             <ListTree size={15} className="text-emerald-700" />
@@ -728,6 +725,10 @@ function formatCurrency(value: number) {
     currency: "CNY",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 const container = document.getElementById("root")!;
