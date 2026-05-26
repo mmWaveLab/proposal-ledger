@@ -32,6 +32,27 @@ python3 scripts/review_proposals.py
 
 申报书正文优先维护 `applications/YYYY/QN/物品名称/申报书.md`。需要交付给导师时，运行 `scripts/generate_proposal_docx.py --all` 生成 `exports/proposal-docx/**/物品名称-申报书.docx`。GitHub Actions 每次也会自动生成并上传云端下载包，可直接下载：[proposal-docx.zip](https://github.com/mmWaveLab/proposal-ledger/releases/download/proposal-docx-latest/proposal-docx.zip)。备用入口是 [Update proposal statistics](https://github.com/mmWaveLab/proposal-ledger/actions/workflows/update-stats.yml) 最新运行的 Artifacts。
 
+## Web 预览与 DOCX 导出
+
+仓库内置一个由 Node 驱动的 React 静态页面，用于更友好地预览 `申报书.md`，并在浏览器中直接导出 DOCX：
+
+```bash
+pnpm install
+pnpm run dev
+```
+
+打开终端显示的本地地址即可按年度/季度展开项目、预览正文、查看表格和图片，并点击“当前”下载单份 Word 文档。左侧支持勾选多个项目，点击“批量”会将选中的 DOCX 打包为 ZIP 下载。
+
+静态部署时运行：
+
+```bash
+pnpm run build
+```
+
+构建过程会扫描 `applications/**/申报书.md`，把 Markdown 和本地图片写入 `public/proposal-data.json`，最终产物在 `dist/`。部署 `dist/` 到 GitHub Pages、Cloudflare Pages 或任意静态文件服务后，预览和 DOCX 导出都不需要后端服务。
+
+Vercel 部署已提供 `vercel.json`，建议项目名和默认域名使用 `proposal-ledger` 或 `mmwave-proposal-ledger`。如果使用 Vercel 默认域名，形态通常为 `proposal-ledger.vercel.app`；如果绑定自有域名，推荐 `proposal.mmwavelab.com` 或 `ledger.mmwavelab.com`。
+
 统计里的“已确认价格总额”只汇总已经能落到具体金额的行；如果某个项目仍有规格价待复核，会显示为“部分确认”或“待复核”，避免把起售价误当成完整预算。
 校验脚本会检查申报目录层级、必填字段、价格表列、合计行、`申报书.md` 标题和本地图片/文件链接，并阻止 DOCX 生成产物进入申报目录。审查脚本会检查申报书中是否残留报销流程话术、内部素材备注、待补充痕迹和过于基础的调试目标。
 

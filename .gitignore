@@ -19,6 +19,13 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Node
+node_modules/
+dist/
+public/proposal-data.json
+tsconfig.tsbuildinfo
+.vercel/
+
 # Local environments and secrets
 .env
 .env.*

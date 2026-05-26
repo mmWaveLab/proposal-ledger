@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.control-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid rgb(203 213 225);
+  background: rgba(255, 255, 255, 0.76);
+  padding: 0 14px;
+  color: rgb(15 23 42);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.control-button.compact {
+  min-height: 34px;
+  gap: 6px;
+  border-radius: 7px;
+  padding: 0 11px;
+  font-size: 12px;
+}
+
+.control-button:hover {
+  transform: translateY(-1px);
+  border-color: rgb(148 163 184);
+  background: white;
+}
+
+.control-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+  transform: none;
+}
+
+.control-button.primary {
+  border-color: rgb(5 95 70);
+  background: rgb(5 95 70);
+  color: white;
+}
+
+.control-button.primary:hover {
+  background: rgb(4 78 56);
+}
+
+.proposal-preview {
+  color: rgb(15 23 42);
+}
+
+.proposal-preview h1 {
+  margin: 0 0 22px;
+  text-align: center;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.32;
+  letter-spacing: 0;
+}
+
+.proposal-preview h2 {
+  margin: 24px 0 10px;
+  border-bottom: 1px solid rgb(226 232 240);
+  padding-bottom: 7px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+.proposal-preview p {
+  margin: 0 0 10px;
+  text-indent: 2em;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: 15px;
+  line-height: 1.76;
+}
+
+.proposal-preview ul {
+  margin: 0 0 16px 24px;
+  padding: 0;
+}
+
+.proposal-preview li {
+  margin: 4px 0;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: 15px;
+  line-height: 1.72;
+}
+
+.proposal-preview table {
+  margin: 12px 0 18px;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.proposal-preview th,
+.proposal-preview td {
+  border: 1px solid rgb(148 163 184);
+  padding: 7px 8px;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.proposal-preview th {
+  background: rgb(217 234 247);
+  text-align: center;
+  font-weight: 700;
+}
+
+.proposal-preview img {
+  margin: 10px auto 18px;
+  display: block;
+  max-height: 560px;
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgb(226 232 240);
+  object-fit: contain;
+}
+
+.proposal-preview a {
+  color: rgb(4 120 87);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.emoji-icon {
+  display: inline-flex;
+  width: 1.25em;
+  height: 1.25em;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05em;
+  line-height: 1;
+}

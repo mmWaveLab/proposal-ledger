@@ -1,0 +1,11 @@
+.DS_Store
+.git
+node_modules
+dist
+exports
+work
+data
+datasets
+raw-data
+raw_data
+*.log

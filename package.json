@@ -1,0 +1,45 @@
+{
+  "name": "proposal-ledger",
+  "version": "1.0.0",
+  "description": "mmWaveLab 申报资料台账，用于保存申报书、图片文案资料、申报结果和价格记录。",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "data": "node scripts/build_proposal_data.mjs",
+    "dev": "pnpm run data && vite --host 127.0.0.1",
+    "build": "pnpm run data && tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "pnpm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmWaveLab/proposal-ledger.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmWaveLab/proposal-ledger/issues"
+  },
+  "homepage": "https://github.com/mmWaveLab/proposal-ledger#readme",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "clsx": "^2.1.1",
+    "docx": "^9.7.0",
+    "framer-motion": "^12.40.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.16.0",
+    "marked": "^18.0.4",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3"
+  }
+}
