@@ -51,9 +51,11 @@ pnpm run build
 
 构建过程会扫描 `applications/**/申报书.md`，把 Markdown 和本地图片写入 `public/proposal-data.json`，最终产物在 `dist/`。部署 `dist/` 到 GitHub Pages、Cloudflare Pages 或任意静态文件服务后，预览和 DOCX 导出都不需要后端服务。
 
-Vercel 部署已提供 `vercel.json`，建议项目名和默认域名使用 `proposal-ledger` 或 `mmwave-proposal-ledger`。如果使用 Vercel 默认域名，形态通常为 `proposal-ledger.vercel.app`；如果绑定自有域名，推荐 `proposal.mmwavelab.com` 或 `ledger.mmwavelab.com`。
+仓库 public 后，推荐直接用 GitHub Pages。项目已提供 `.github/workflows/deploy-pages.yml`：推送到 `main` 后会自动安装 pnpm、构建 Vite 静态页面，并发布 `dist/`。首次使用时在 GitHub 仓库 Settings -> Pages 中把 Source 设为 GitHub Actions；之后无需 Vercel token 或额外服务。
 
-Vercel 项目建议直接通过 Vercel Git Integration 绑定 GitHub 仓库。绑定后推送到 `main` 会由 Vercel 自动构建并发布，不需要在 GitHub Actions 中配置 Vercel token。
+默认访问地址通常为 `https://mmwavelab.github.io/proposal-ledger/`。如果后续要使用自有域名，可以在 GitHub Pages 的 Custom domain 里绑定例如 `doc.mpas.top` 或 `ledger.mpas.top`，再把 DNS CNAME 指向 `mmwavelab.github.io`。
+
+Vercel 部署配置仍保留为备用路线；如果继续使用 Vercel，项目名建议用 `proposal-ledger` 或 `mmwave-proposal-ledger`。
 
 统计里的“已确认价格总额”只汇总已经能落到具体金额的行；如果某个项目仍有规格价待复核，会显示为“部分确认”或“待复核”，避免把起售价误当成完整预算。
 校验脚本会检查申报目录层级、必填字段、价格表列、合计行、`申报书.md` 标题和本地图片/文件链接，并阻止 DOCX 生成产物进入申报目录。审查脚本会检查申报书中是否残留报销流程话术、内部素材备注、待补充痕迹和过于基础的调试目标。
