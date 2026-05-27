@@ -54,6 +54,12 @@ DOCX_RULES = [
         "正式申报书中尽量用预算单价、申报金额、合计等表述；价格来源细节放 README。",
     ),
     Rule(
+        "DOCX-BUDGET-SCALE-JUDGMENT",
+        "error",
+        re.compile(r"(?:预算金额|经费|金额|价格).{0,8}(?:较低|较高|不高|较少|较小|便宜|低廉)"),
+        "申报书不要评价预算金额或经费规模高低；只列经费表和用途。",
+    ),
+    Rule(
         "DOCX-UNCONFIRMED-LAB-PROCESS",
         "error",
         re.compile(
